@@ -1,12 +1,10 @@
-import 'dart:async'; // Import for Timer
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 import '../services/bonus_service.dart';
 import '../widgets/resource_display.dart';
 import '../widgets/drone_upgrade.dart';
 import '../models/resource_model.dart';
-
-// Rest of your code remains unchanged
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -16,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late DatabaseService dbService;
   late BonusService bonusService;
-  Resource resource = Resource(energy: 0, drones: 0, totalCollected: 0);
+  Resource? resource;
   List<String> history = [];
   Timer? autoCollectTimer;
 
@@ -25,29 +23,28 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     dbService = DatabaseService();
     bonusService = BonusService();
-    dbService.initDb().then((_) {
-      dbService.loadData().then((data) {
-        if (data != null) {
-          setState(() {
-            resource = data;
-          });
-        }
-        _startAutoCollect();
-      });
+    _initAndLoad();
+  }
+
+  Future<void> _initAndLoad() async {
+    await dbService.initDb();
+    final loaded = await dbService.loadData();
+    setState(() {
+      resource = loaded;
     });
+    _startAutoCollect();
   }
 
   void _startAutoCollect() {
     autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource.drones > 0) {
-        final collected = (resource.drones * 2 * bonusService.bonusMultiplier).round();
+      if (resource != null && resource!.drones > 0) {
+        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
         setState(() {
-          resource.energy += collected;
-          resource.totalCollected += collected;
+          resource!.energy += collected;
+          resource!.totalCollected += collected;
           history.add("Drones ont collecté $collected énergie");
         });
-        print("Energy: ${resource.energy}"); // Debug log
-        dbService.saveData(resource);
+        dbService.saveData(resource!);
       }
     });
   }
@@ -55,22 +52,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void _collectEnergy() {
     final collected = (1 * bonusService.bonusMultiplier).round();
     setState(() {
-      resource.energy += collected;
-      resource.totalCollected += collected;
+      resource!.energy += collected;
+      resource!.totalCollected += collected;
       history.add("Clique +$collected énergie");
     });
-    dbService.saveData(resource);
+    dbService.saveData(resource!);
   }
 
   void _buyDrone() {
     const cost = 50;
-    if (resource.energy >= cost) {
+    if (resource!.energy >= cost) {
       setState(() {
-        resource.energy -= cost;
-        resource.drones++;
+        resource!.energy -= cost;
+        resource!.drones++;
         history.add("Drone acheté !");
       });
-      dbService.saveData(resource);
+      dbService.saveData(resource!);
     } else {
       _showMessage("Pas assez d'énergie pour acheter un drone");
     }
@@ -97,12 +94,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     autoCollectTimer?.cancel();
     bonusService.dispose();
+    if (resource != null) {
+      dbService.saveData(resource!); // Sauvegarde à la fermeture
+    }
     dbService.closeDb();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (resource == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text("Exploration Spatiale Clicker"),
@@ -118,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            ResourceDisplay(energy: resource.energy, drones: resource.drones),
+            ResourceDisplay(energy: resource!.energy, drones: resource!.drones),
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: _collectEnergy,
@@ -128,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             SizedBox(height: 20),
-            DroneUpgrade(energy: resource.energy, onBuyDrone: _buyDrone),
+            DroneUpgrade(energy: resource!.energy, onBuyDrone: _buyDrone),
             SizedBox(height: 20),
             Expanded(
               child: Container(
@@ -139,9 +144,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListView(
                   children: history.reversed
                       .map((e) => Text(
-                    e,
-                    style: TextStyle(color: Colors.white70),
-                  ))
+                            e,
+                            style: TextStyle(color: Colors.white70),
+                          ))
                       .toList(),
                 ),
               ),

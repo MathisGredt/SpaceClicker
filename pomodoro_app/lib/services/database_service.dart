@@ -1,50 +1,74 @@
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 import '../models/resource_model.dart';
 
 class DatabaseService {
-  late Database db;
+  static final DatabaseService _instance = DatabaseService._internal();
+  factory DatabaseService() => _instance;
+  DatabaseService._internal();
+
+  Database? _db;
+
+  static const String _tableName = 'resource_save';
 
   Future<void> initDb() async {
-    final documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = '${documentsDirectory.path}/clicker.db';
-
-    db = await openDatabase(
+    if (_db != null) return;
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'resources.db');
+    _db = await openDatabase(
       path,
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE resources (
+          CREATE TABLE $_tableName (
             id INTEGER PRIMARY KEY,
-            energy INTEGER,
-            drones INTEGER,
-            totalCollected INTEGER
+            energy INTEGER NOT NULL,
+            drones INTEGER NOT NULL,
+            totalCollected INTEGER NOT NULL
           )
         ''');
+        await db.insert(_tableName, {
+          'id': 1,
+          'energy': 0,
+          'drones': 0,
+          'totalCollected': 0,
+        });
       },
     );
-
-    final count = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT COUNT(*) FROM resources'));
-
-    if (count == 0) {
-      await db.insert('resources', Resource(energy: 0, drones: 0, totalCollected: 0).toMap());
-    }
   }
 
-  Future<Resource?> loadData() async {
-    final data = await db.query('resources', limit: 1);
-    if (data.isNotEmpty) {
-      return Resource.fromMap(data[0]);
+  Future<Resource> loadData() async {
+    await initDb();
+    final List<Map<String, dynamic>> maps = await _db!.query(
+      _tableName,
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+    if (maps.isNotEmpty) {
+      return Resource.fromMap(maps.first);
+    } else {
+      await _db!.insert(_tableName, {
+        'id': 1,
+        'energy': 0,
+        'drones': 0,
+        'totalCollected': 0,
+      });
+      return Resource(energy: 0, drones: 0, totalCollected: 0);
     }
-    return null;
   }
 
   Future<void> saveData(Resource resource) async {
-    await db.update('resources', resource.toMap(), where: 'id = ?', whereArgs: [1]);
+    await initDb();
+    await _db!.update(
+      _tableName,
+      resource.toMap(),
+      where: 'id = ?',
+      whereArgs: [1],
+    );
   }
 
   Future<void> closeDb() async {
-    await db.close();
+    await _db?.close();
+    _db = null;
   }
 }

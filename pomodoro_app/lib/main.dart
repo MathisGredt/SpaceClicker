@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
-void main() {
+// Ajoute ces imports pour sqflite_common_ffi
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+void main() async {
+  // Cette ligne est CRUCIALE pour Windows/Linux/macOS
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+
   runApp(const MyApp());
 }
 
