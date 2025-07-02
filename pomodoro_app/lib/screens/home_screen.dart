@@ -43,9 +43,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (resource != null && resource!.drones > 0) {
         final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
         setState(() {
-          resource!.energy += collected;
+          resource!.noctilium += collected;
           resource!.totalCollected += collected;
-          history.add("Drones ont collecté $collected énergie");
+          history.add("Drones ont collecté $collected noctilium");
         });
         dbService.saveData(resource!);
       }
@@ -53,7 +53,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _collectNoctilium(TapDownDetails details) {
-    // Convert global position to local position
+    if (resource == null) return; // Ensure resource is not null
+
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset localPosition = box.globalToLocal(details.globalPosition);
 
@@ -67,10 +68,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
     });
 
-    // Add falling text and icon from the converted position
     setState(() {
-      resource.noctilium++;
-      resource.totalCollected++;
+      resource!.noctilium++; // Use null-aware operator
+      resource!.totalCollected++;
       history.add("Clique +1 Noctilium");
 
       fallingWidgets.add(_createFallingWidget(
@@ -80,9 +80,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ));
     });
 
-    dbService.saveData(resource);
+    dbService.saveData(resource!); // Use null-aware operator
 
-    // Remove falling widget after animation
     Future.delayed(Duration(seconds: 2), () {
       setState(() {
         if (fallingWidgets.isNotEmpty) {
@@ -94,13 +93,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _buyDrone() {
     const cost = 50; // Cost of a drone
-    if (resource.noctilium >= cost) {
+    if (resource != null && resource!.noctilium >= cost) { // Ensure resource is not null
       setState(() {
-        resource.noctilium -= cost;
-        resource.drones++;
+        resource!.noctilium -= cost; // Use null-aware operator
+        resource!.drones++; // Use null-aware operator
         history.add("Drone acheté !");
       });
-      dbService.saveData(resource!);
+      dbService.saveData(resource!); // Use null-aware operator
     } else {
       _showMessage("Pas assez de Noctilium pour acheter un drone");
     }
@@ -186,9 +185,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       body: Column(
         children: [
           ResourceDisplay(
-            drones: resource.drones,
-            noctilium: resource.noctilium,
-            ferralyte: resource.ferralyte,
+            drones: resource?.drones ?? 0, // Use null-aware operator
+            noctilium: resource?.noctilium ?? 0, // Use null-aware operator
+            ferralyte: resource?.ferralyte ?? 0, // Use null-aware operator
           ),
           Expanded(
             child: Stack(
@@ -197,28 +196,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
-                      onTapDown: _collectNoctilium, // Capture tap position
+                      onTapDown: _collectNoctilium,
                       child: AnimatedScale(
                         scale: isClicked ? 1.2 : 1.0,
                         duration: Duration(milliseconds: 200),
                         child: Image.asset(
                           'assets/images/first_planet.png',
-                          width: 300, // Increased size
-                          height: 300, // Increased size
+                          width: 300,
+                          height: 300,
                         ),
                       ),
                     ),
                   ),
                 ),
-                ...fallingWidgets, // Add falling widgets to the stack
+                ...fallingWidgets,
               ],
             ),
           ),
           SizedBox(height: 20),
-          DroneUpgrade(noctilium: resource.noctilium, onBuyDrone: _buyDrone),
+          DroneUpgrade(
+            noctilium: resource?.noctilium ?? 0, // Use null-aware operator
+            onBuyDrone: _buyDrone,
+          ),
           SizedBox(height: 20),
           Container(
-            height: 150, // Reduced height
+            height: 150,
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
                 color: Colors.black54,

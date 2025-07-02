@@ -12,27 +12,22 @@ class DatabaseService {
   static const String _tableName = 'resource_save';
 
   Future<void> initDb() async {
-    if (_db != null) return;
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'resources.db');
+    final path = join(dbPath, 'resource.db');
+
     _db = await openDatabase(
       path,
       version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
+      onCreate: (db, version) {
+        db.execute('''
           CREATE TABLE $_tableName (
             id INTEGER PRIMARY KEY,
-            energy INTEGER NOT NULL,
-            drones INTEGER NOT NULL,
-            totalCollected INTEGER NOT NULL
+            noctilium INTEGER,
+            ferralyte INTEGER,
+            drones INTEGER,
+            totalCollected INTEGER
           )
         ''');
-        await db.insert(_tableName, {
-          'id': 1,
-          'energy': 0,
-          'drones': 0,
-          'totalCollected': 0,
-        });
       },
     );
   }
@@ -49,11 +44,17 @@ class DatabaseService {
     } else {
       await _db!.insert(_tableName, {
         'id': 1,
-        'energy': 0,
+        'noctilium': 0,
+        'ferralyte': 0,
         'drones': 0,
         'totalCollected': 0,
       });
-      return Resource(energy: 0, drones: 0, totalCollected: 0);
+      return Resource(
+        noctilium: 0,
+        ferralyte: 0,
+        drones: 0,
+        totalCollected: 0,
+      );
     }
   }
 
