@@ -16,7 +16,6 @@ class DatabaseService {
         await db.execute('''
           CREATE TABLE resources (
             id INTEGER PRIMARY KEY,
-            energy INTEGER,
             drones INTEGER,
             totalCollected INTEGER
           )
