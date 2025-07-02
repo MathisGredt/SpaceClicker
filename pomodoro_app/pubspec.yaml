@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  window_manager: ^0.3.7
+  sqflite_common_ffi: ^2.3.3
 
   # UI & icônes
   cupertino_icons: ^1.0.8

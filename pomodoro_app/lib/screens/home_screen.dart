@@ -16,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool isClicked = false;
   late DatabaseService dbService;
   late BonusService bonusService;
-  Resource resource = Resource(drones: 0, totalCollected: 0, noctilium: 0, ferralyte: 0);
+  Resource? resource;
   List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
@@ -26,28 +26,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     dbService = DatabaseService();
     bonusService = BonusService();
-    dbService.initDb().then((_) {
-      dbService.loadData().then((data) {
-        if (data != null) {
-          setState(() {
-            resource = data;
-          });
-        }
-        _startAutoCollect();
-      });
+    _initAndLoad();
+  }
+
+  Future<void> _initAndLoad() async {
+    await dbService.initDb();
+    final loaded = await dbService.loadData();
+    setState(() {
+      resource = loaded;
     });
+    _startAutoCollect();
   }
 
   void _startAutoCollect() {
     autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource.drones > 0) {
-        final collected = (resource.drones * 2 * bonusService.bonusMultiplier).round();
+      if (resource != null && resource!.drones > 0) {
+        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
         setState(() {
-          resource.noctilium += collected;
-          resource.totalCollected += collected;
-          history.add("Drones ont collecté $collected Noctilium");
+          resource!.energy += collected;
+          resource!.totalCollected += collected;
+          history.add("Drones ont collecté $collected énergie");
         });
-        dbService.saveData(resource);
+        dbService.saveData(resource!);
       }
     });
   }
@@ -92,7 +92,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-
   void _buyDrone() {
     const cost = 50; // Cost of a drone
     if (resource.noctilium >= cost) {
@@ -101,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         resource.drones++;
         history.add("Drone acheté !");
       });
-      dbService.saveData(resource);
+      dbService.saveData(resource!);
     } else {
       _showMessage("Pas assez de Noctilium pour acheter un drone");
     }
@@ -170,11 +169,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return widget;
   }
 
-
   @override
   void dispose() {
     autoCollectTimer?.cancel();
     bonusService.dispose();
+    if (resource != null) {
+      dbService.saveData(resource!); // Sauvegarde à la fermeture
+    }
     dbService.closeDb();
     super.dispose();
   }
