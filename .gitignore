@@ -1,0 +1,13 @@
+# Flutter build files
+build/
+
+# Dart tool files
+.dart_tool/
+
+# IntelliJ / Android Studio files
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
