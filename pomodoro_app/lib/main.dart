@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'services/audio_service.dart';
 
 // Ajoute ces imports pour sqflite_common_ffi
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -8,7 +9,8 @@ void main() async {
   // Cette ligne est CRUCIALE pour Windows/Linux/macOS
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-
+  WidgetsFlutterBinding.ensureInitialized();
+  final audioService = AudioService();
   runApp(const MyApp());
 }
 

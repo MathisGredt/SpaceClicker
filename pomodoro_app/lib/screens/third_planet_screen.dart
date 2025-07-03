@@ -9,6 +9,7 @@ import '../widgets/resource_display.dart';
 import '../widgets/drone_upgrade.dart';
 import '../models/resource_model.dart';
 import 'second_planet_screen.dart';
+import '../services/audio_service.dart';
 
 
 class ThirdPlanetScreen extends StatefulWidget {

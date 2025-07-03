@@ -10,6 +10,7 @@ import '../widgets/drone_upgrade.dart';
 import '../models/resource_model.dart';
 import 'home_screen.dart';
 import 'third_planet_screen.dart';
+import '../services/audio_service.dart';
 
 class SecondPlanetScreen extends StatefulWidget {
   @override

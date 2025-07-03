@@ -14,6 +14,8 @@ dependencies:
   video_player_win: ^3.1.1
   window_manager: ^0.3.7
   sqflite_common_ffi: ^2.3.3
+  just_audio: ^0.9.36
+  just_audio_windows: ^0.2.2
 
   # UI & icônes
   cupertino_icons: ^1.0.8
@@ -47,7 +49,10 @@ flutter:
   # Ajoute ici tes éventuels assets (sons, images, etc.)
   assets:
     - assets/images/
-    - assets/sounds/
+    - assets/sounds/moonlit_whispers.mp3
+    - assets/sounds/starlit_horizons.mp3
+    - assets/sounds/whisper_of_the_stars.mp3
+    - assets/sounds/whispers_in_the_wind.mp3
     - assets/videos/background.mp4
 
   # Ajoute ici si tu as des polices
