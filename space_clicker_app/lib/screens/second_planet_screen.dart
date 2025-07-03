@@ -5,8 +5,10 @@ import '../widgets/background_video.dart';
 import '../services/database_service.dart';
 import '../services/bonus_service.dart';
 import '../services/video_service.dart';
-import '../widgets/resource_display.dart';
+import '../services/game_service.dart';
 import '../widgets/drone_upgrade.dart';
+import '../widgets/retro_terminal_left.dart';
+import '../widgets/retro_terminal_right.dart';
 import '../models/resource_model.dart';
 import 'home_screen.dart';
 import 'third_planet_screen.dart';
@@ -19,15 +21,20 @@ class SecondPlanetScreen extends StatefulWidget {
 
 class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProviderStateMixin {
   late VideoService videoService;
+
+  // Singleton GameService utilisé ici
+  final GameService gameService = GameService.instance;
+
   bool isClicked = false;
   bool isFading = false;
   bool fadeOut = true; // New state for fade-out
   late DatabaseService dbService;
   late BonusService bonusService;
-  Resource? resource;
-  List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
+
+  Resource? get resource => gameService.resource;
+  List<String> get history => gameService.getHistory();
 
   @override
   void initState() {
@@ -54,17 +61,12 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     _startAutoCollect();
   }
 
-  void _startAutoCollect() {
-    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource != null && resource!.drones > 0) {
-        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
-        setState(() {
-          resource!.noctilium += collected;
-          resource!.totalCollected += collected;
-          history.add("Drones ont collecté $collected noctilium sur la planète 2");
-        });
-        dbService.saveData(resource!);
-      }
+    gameService.init().then((_) {
+      // Démarre la collecte automatique avec callback setState
+      gameService.startAutoCollect(() {
+        if (mounted) setState(() {});
+      });
+      setState(() {});
     });
   }
 
@@ -90,6 +92,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     setState(() {
       isFading = true;
     });
+  }
 
     Future.delayed(Duration(seconds: 1), () {
       videoService.disposeVideo();
@@ -101,17 +104,87 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           isFading = false;
         });
       });
+  void _attemptBuyDrone() {
+    final success = gameService.buyDrone();
+    if (!success) {
+      _showMessage("Pas assez de Noctilium pour acheter un drone sur la planète 2");
+    }
+    setState(() {});
+  }
+
+  void _showMessage(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void _handleCommand(String cmd) {
+    setState(() {
+      gameService.handleCommand(cmd);
     });
+  }
+
+  Widget _createFallingWidget(String text, String iconPath, Offset position) {
+    final controller = AnimationController(
+      duration: Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    final curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
+
+    final verticalAnimation = TweenSequence([
+      TweenSequenceItem(
+          tween: Tween(begin: 0.0, end: -60.0).chain(CurveTween(curve: Curves.easeOut)),
+          weight: 0.3),
+      TweenSequenceItem(
+          tween: Tween(begin: -60.0, end: 100.0).chain(CurveTween(curve: Curves.easeIn)),
+          weight: 0.7),
+    ]).animate(curve);
+
+    final horizontalOffset = Random().nextBool() ? 30.0 : -30.0;
+    final horizontalAnimation = Tween<double>(begin: 0, end: horizontalOffset).animate(curve);
+    final opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(curve);
+
+    controller.forward();
+
+    final widget = AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) {
+        return Positioned(
+          top: position.dy + verticalAnimation.value,
+          left: position.dx + horizontalAnimation.value,
+          child: Opacity(
+            opacity: opacityAnimation.value,
+            child: child,
+          ),
+        );
+      },
+      child: Row(
+        children: [
+          Image.asset(iconPath, width: 24, height: 24),
+          SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(fontSize: 16, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+
+    controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+        setState(() {
+          fallingWidgets.remove(widget);
+        });
+      }
+    });
+
+    return widget;
   }
 
   @override
   void dispose() {
-    autoCollectTimer?.cancel();
-    bonusService.dispose();
-    if (resource != null) {
-      dbService.saveData(resource!);
-    }
-    dbService.closeDb();
+    // Ne pas disposer gameService ici pour garder son état et timers actifs
+    videoService.disposeVideo();
     super.dispose();
   }
 
@@ -121,11 +194,22 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
       body: Stack(
         children: [
           BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
-          ResourceDisplay(
-            drones: resource?.drones ?? 0,
-            noctilium: resource?.noctilium ?? 0,
-            ferralyte: resource?.ferralyte ?? 0,
+
+          Positioned(
+            top: 40,
+            left: 20,
+            child: RetroTerminalLeft(resource: resource),
           ),
+
+          Positioned(
+            top: 40,
+            right: 20,
+            child: RetroTerminalRight(
+              history: history,
+              onCommand: _handleCommand,
+            ),
+          ),
+
           Center(
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
@@ -143,6 +227,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
               ),
             ),
           ),
+
           Positioned(
             left: 20,
             top: MediaQuery.of(context).size.height / 2 - 150 + 150,
@@ -167,6 +252,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
               child: Container(color: Colors.black),
             ),
           ),
+          ...fallingWidgets,
         ],
       ),
     );
