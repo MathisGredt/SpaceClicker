@@ -17,13 +17,15 @@ class DatabaseService {
 
     _db = await openDatabase(
       path,
-      version: 2,
+      version: 3, // Augmentez la version de la base de données
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $_tableName (
             id INTEGER PRIMARY KEY,
             noctilium INTEGER,
             ferralyte INTEGER,
+            verdanite INTEGER DEFAULT 0, -- Ajout de la colonne Verdanite
+            ignitium INTEGER DEFAULT 0,  -- Ajout de la colonne Ignitium
             drones INTEGER,
             totalCollected INTEGER,
             bonus REAL DEFAULT 1.0
@@ -33,6 +35,10 @@ class DatabaseService {
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute('ALTER TABLE $_tableName ADD COLUMN bonus REAL DEFAULT 1.0');
+        }
+        if (oldVersion < 3) {
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN verdanite INTEGER DEFAULT 0');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN ignitium INTEGER DEFAULT 0');
         }
       },
     );
@@ -52,6 +58,8 @@ class DatabaseService {
         'id': 1,
         'noctilium': 0,
         'ferralyte': 0,
+        'verdanite': 0, // Initialisation par défaut
+        'ignitium': 0,  // Initialisation par défaut
         'drones': 0,
         'totalCollected': 0,
         'bonus': 1.0,
@@ -59,6 +67,8 @@ class DatabaseService {
       return Resource(
         noctilium: 0,
         ferralyte: 0,
+        verdanite: 0,
+        ignitium: 0,
         drones: 0,
         totalCollected: 0,
         bonus: 1.0,

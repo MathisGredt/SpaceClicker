@@ -7,7 +7,6 @@ import '../services/bonus_service.dart';
 import '../services/video_service.dart';
 import '../widgets/resource_display.dart';
 import '../services/game_service.dart';
-import '../widgets/drone_upgrade.dart';
 import '../widgets/retro_terminal_left.dart';
 import '../widgets/retro_terminal_right.dart';
 import '../models/resource_model.dart';
@@ -69,6 +68,40 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     });
   }
 
+  void _collectIgnitium(TapDownDetails details) {
+    if (resource == null) return;
+
+    RenderBox box = context.findRenderObject() as RenderBox;
+    Offset localPosition = box.globalToLocal(details.globalPosition);
+
+    setState(() {
+      isClicked = true;
+      resource!.ignitium++; // ✅ Incrémenter la ressource Ignitium
+      resource!.totalCollected++;
+      dbService.saveData(resource!);
+
+      fallingWidgets.add(_createFallingWidget(
+        "+1",
+        'assets/images/ignitium.png',
+        localPosition,
+      ));
+    });
+
+    Future.delayed(Duration(milliseconds: 200), () {
+      setState(() {
+        isClicked = false;
+      });
+    });
+
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+        if (fallingWidgets.isNotEmpty) {
+          fallingWidgets.removeAt(0);
+        }
+      });
+    });
+  }
+
   void _startAutoCollect() {
     autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
       if (resource != null && resource!.drones > 0) {
@@ -76,7 +109,6 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
         setState(() {
           resource!.noctilium += collected;
           resource!.totalCollected += collected;
-          history.add("Drones ont collecté $collected noctilium sur la planète 3");
         });
         dbService.saveData(resource!);
       }
@@ -123,7 +155,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
   void _handleCommand(String cmd) {
     setState(() {
-      gameService.handleCommand(cmd);
+      gameService.handleCommand(cmd, context);
     });
   }
 
@@ -198,6 +230,29 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
           BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
 
           Positioned(
+            top: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Text(
+                "Nebulys",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.greenAccent,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(2, 2),
+                      blurRadius: 4,
+                      color: Colors.black,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
             top: 40,
             left: 20,
             child: RetroTerminalLeft(resource: resource),
@@ -216,7 +271,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
-                onTapDown: (details) {},
+                onTapDown: _collectIgnitium,
                 child: AnimatedScale(
                   scale: isClicked ? 1.2 : 1.0,
                   duration: Duration(milliseconds: 200),

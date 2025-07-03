@@ -39,6 +39,11 @@ class _RetroTerminalRightState extends State<RetroTerminalRight> {
             style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
           ),
           SizedBox(height: 10),
+          Text(
+            "Commandes disponibles : /upgrade, /buy",
+            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
+          ),
+          SizedBox(height: 10),
           Flexible(
             fit: FlexFit.loose,
             child: ConstrainedBox(
@@ -48,11 +53,11 @@ class _RetroTerminalRightState extends State<RetroTerminalRight> {
                 children: widget.history
                     .map(
                       (msg) => Text(
-                        msg,
-                        style: TextStyle(
-                            color: Colors.greenAccent, fontFamily: 'Courier'),
-                      ),
-                    )
+                    msg,
+                    style: TextStyle(
+                        color: Colors.greenAccent, fontFamily: 'Courier'),
+                  ),
+                )
                     .toList(),
               ),
             ),

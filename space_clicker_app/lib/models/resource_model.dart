@@ -3,14 +3,18 @@ class Resource {
   int totalCollected;
   int noctilium;
   int ferralyte;
-  double bonus; // ✅ Ajout du champ bonus
+  int verdanite; // ✅ Ajout de la ressource Verdanite
+  int ignitium;  // ✅ Ajout de la ressource Ignitium
+  double bonus;
 
   Resource({
     required this.drones,
     required this.totalCollected,
     this.noctilium = 0,
     this.ferralyte = 0,
-    this.bonus = 1.0, // ✅ Valeur par défaut
+    this.verdanite = 0, // ✅ Initialisation par défaut
+    this.ignitium = 0,  // ✅ Initialisation par défaut
+    this.bonus = 1.0,
   });
 
   Map<String, dynamic> toMap() {
@@ -19,7 +23,9 @@ class Resource {
       'totalCollected': totalCollected,
       'noctilium': noctilium,
       'ferralyte': ferralyte,
-      'bonus': bonus, // ✅ Ajout au mapping
+      'verdanite': verdanite, // ✅ Ajout au mapping
+      'ignitium': ignitium,   // ✅ Ajout au mapping
+      'bonus': bonus,
     };
   }
 
@@ -29,7 +35,9 @@ class Resource {
       totalCollected: map['totalCollected'] as int,
       noctilium: map['noctilium'] as int? ?? 0,
       ferralyte: map['ferralyte'] as int? ?? 0,
-      bonus: (map['bonus'] ?? 1.0).toDouble(), // ✅ Lecture sécurisée
+      verdanite: map['verdanite'] as int? ?? 0, // ✅ Lecture sécurisée
+      ignitium: map['ignitium'] as int? ?? 0,   // ✅ Lecture sécurisée
+      bonus: (map['bonus'] ?? 1.0).toDouble(),
     );
   }
 }

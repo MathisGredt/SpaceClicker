@@ -1,8 +1,10 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';  // <-- ajoute ça
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/resource_model.dart';
 import 'database_service.dart';
 import 'bonus_service.dart';
+import '../screens/upgrade_screen.dart';
 
 class GameService {
   static final GameService _instance = GameService._internal();
@@ -69,13 +71,18 @@ class GameService {
     }
   }
 
-  void handleCommand(String input) {
-    switch (input.toLowerCase()) {
-      case 'help':
-        history.add('Commandes disponibles : help, buy, move');
+  void handleCommand(String input, BuildContext context) {
+    switch (input) {
+      case '/upgrade':
+        history.add('Commande exécutée : $input');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => UpgradeScreen()),
+        );
         break;
-      case 'buy':
-        buyDrone();
+      case '/buy':
+        history.add('Commande exécutée : $input');
+        // Logique pour la commande /buy
         break;
       default:
         history.add('Commande inconnue : $input');

@@ -6,7 +6,6 @@ import '../services/database_service.dart';
 import '../services/bonus_service.dart';
 import '../services/video_service.dart';
 import '../widgets/resource_display.dart';
-import '../widgets/drone_upgrade.dart';
 import '../widgets/retro_terminal_left.dart';
 import '../widgets/retro_terminal_right.dart';
 import '../models/resource_model.dart';
@@ -61,7 +60,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     gameService.init().then((_) {
       gameService.startAutoCollect(() {
         if (mounted) {
-          setState(() {});
+          setState(() {
+            resource = gameService.resource;
+          });
         }
       });
 
@@ -115,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _handleCommand(String cmd) {
     setState(() {
-      gameService.handleCommand(cmd);
+      gameService.handleCommand(cmd, context);
     });
   }
 
@@ -211,6 +212,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
 
           Positioned(
+            top: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Text(
+                "Theralis",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.greenAccent,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(2, 2),
+                      blurRadius: 4,
+                      color: Colors.black,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          Positioned(
             top: 40,
             left: 20,
             child: RetroTerminalLeft(resource: resource),
@@ -251,18 +275,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onPressed: _navigateToSecondPlanet,
             ),
           ),
-
-          DroneUpgrade(
-            noctilium: resource?.noctilium ?? 0,
-            onBuyDrone: _attemptBuyDrone,
-          ),
-
           ...fallingWidgets,
           IgnorePointer(
-            ignoring: !isFading && !fadeOut, // Adjusted to handle both fade states
+            ignoring: !isFading && !fadeOut,
             child: AnimatedOpacity(
-              opacity: isFading ? 1.0 : (fadeOut ? 1.0 : 0.0), // Handles fade-in and fade-out
-              duration: Duration(seconds: 1), // Increased duration to 1 second
+              opacity: isFading ? 1.0 : (fadeOut ? 1.0 : 0.0),
+              duration: Duration(seconds: 1),
               child: Container(color: Colors.black),
             ),
           ),
