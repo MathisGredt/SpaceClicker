@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  video_player: ^2.8.2
+  video_player_win: ^3.1.1
   window_manager: ^0.3.7
   sqflite_common_ffi: ^2.3.3
 
@@ -46,6 +48,7 @@ flutter:
   assets:
     - assets/images/
     - assets/sounds/
+    - assets/videos/background.mp4
 
   # Ajoute ici si tu as des polices
   # fonts:

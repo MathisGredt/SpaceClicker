@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
   screen_retriever
+  video_player_win
   window_manager
 )
 
