@@ -73,7 +73,6 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     setState(() {
       resource!.noctilium++;
       resource!.totalCollected++;
-      history.add("Clique +1 Noctilium sur la planète 3");
 
       fallingWidgets.add(_createFallingWidget(
         "+1",

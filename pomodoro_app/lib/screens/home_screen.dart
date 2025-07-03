@@ -33,8 +33,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     dbService = DatabaseService();
     bonusService = BonusService();
     _initAndLoad();
-
-    _loadAndPlayVideo(); // ← nouvelle méthode
+    _loadAndPlayVideo();
   }
 
   Future<void> _loadAndPlayVideo() async {
@@ -105,7 +104,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     setState(() {
       resource!.noctilium++;
       resource!.totalCollected++;
-      history.add("Clique +1 Noctilium");
 
       fallingWidgets.add(_createFallingWidget(
         "+1",
@@ -209,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       dbService.saveData(resource!);
     }
     dbService.closeDb();
-    _videoController?.dispose();
+    _videoController?.dispose(); // Dispose the video controller
     super.dispose();
   }
 
@@ -218,81 +216,58 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: Stack(
         children: [
+          if (_videoController?.value.isInitialized ?? false)
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _videoController!.value.size.width,
+                  height: _videoController!.value.size.height,
+                  child: VideoPlayer(_videoController!),
+                ),
+              ),
+            ),
           ResourceDisplay(
             drones: resource?.drones ?? 0,
             noctilium: resource?.noctilium ?? 0,
             ferralyte: resource?.ferralyte ?? 0,
           ),
-          Expanded(
-            child: Stack(
-              children: [
-                if (_videoController?.value.isInitialized ?? false)
-                  SizedBox.expand(
-                    child: FittedBox(
-                      fit: BoxFit.cover,
-                      child: SizedBox(
-                        width: _videoController!.value.size.width,
-                        height: _videoController!.value.size.height,
-                        child: VideoPlayer(_videoController!),
-                      ),
-                    ),
+          Center(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTapDown: _collectNoctilium,
+                child: AnimatedScale(
+                  scale: isClicked ? 1.2 : 1.0,
+                  duration: Duration(milliseconds: 200),
+                  child: Image.asset(
+                    'assets/images/first_planet.png',
+                    width: 300,
+                    height: 300,
                   ),
-                Container(color: Colors.black.withOpacity(0.3)),
-                Center(
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTapDown: _collectNoctilium,
-                      child: AnimatedScale(
-                        scale: isClicked ? 1.2 : 1.0,
-                        duration: Duration(milliseconds: 200),
-                        child: Image.asset(
-                          'assets/images/first_planet.png',
-                          width: 300,
-                          height: 300,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      right: 20,
-                      top: MediaQuery.of(context).size.height / 2 - 150, // Adjusted position
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
-                          );
-                        },
-                      ),
-                    ),
-                    ...fallingWidgets,
-                  ],
                 ),
               ),
-              SizedBox(height: 20),
-              DroneUpgrade(
-                noctilium: resource?.noctilium ?? 0,
-                onBuyDrone: _buyDrone,
-              ),
-              SizedBox(height: 20),
-              Container(
-                height: 150,
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(12)),
-                child: ListView(
-                  children: history.reversed
-                      .map((e) => Text(
-                    e,
-                    style: TextStyle(color: Colors.white70),
-                  ))
-                      .toList(),
-                ),
-              ),
-            ],
+            ),
           ),
+          Positioned(
+            right: 20,
+            top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
+            child: IconButton(
+              icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
+              onPressed: () {
+                _videoController?.dispose();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
+                );
+              },
+            ),
+          ),
+          DroneUpgrade(
+            noctilium: resource?.noctilium ?? 0,
+            onBuyDrone: _buyDrone,
+          ),
+          ...fallingWidgets,
         ],
       ),
     );

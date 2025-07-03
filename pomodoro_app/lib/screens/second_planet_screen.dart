@@ -73,7 +73,6 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     setState(() {
       resource!.noctilium++;
       resource!.totalCollected++;
-      history.add("Clique +1 Noctilium sur la planète 2");
 
       fallingWidgets.add(_createFallingWidget(
         "+1",
