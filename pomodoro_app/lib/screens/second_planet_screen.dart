@@ -6,14 +6,15 @@ import '../services/bonus_service.dart';
 import '../widgets/resource_display.dart';
 import '../widgets/drone_upgrade.dart';
 import '../models/resource_model.dart';
-import 'second_planet_screen.dart';
+import 'home_screen.dart';
+import 'third_planet_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class SecondPlanetScreen extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _SecondPlanetScreenState createState() => _SecondPlanetScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProviderStateMixin {
   bool isClicked = false;
   late DatabaseService dbService;
   late BonusService bonusService;
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         setState(() {
           resource!.noctilium += collected;
           resource!.totalCollected += collected;
-          history.add("Drones ont collecté $collected noctilium");
+          history.add("Drones ont collecté $collected noctilium sur la planète 2");
         });
         dbService.saveData(resource!);
       }
@@ -54,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _collectNoctilium(TapDownDetails details) {
-    if (resource == null) return; // Ensure resource is not null
+    if (resource == null) return;
 
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset localPosition = box.globalToLocal(details.globalPosition);
@@ -70,9 +71,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     setState(() {
-      resource!.noctilium++; // Use null-aware operator
+      resource!.noctilium++;
       resource!.totalCollected++;
-      history.add("Clique +1 Noctilium");
+      history.add("Clique +1 Noctilium sur la planète 2");
 
       fallingWidgets.add(_createFallingWidget(
         "+1",
@@ -81,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ));
     });
 
-    dbService.saveData(resource!); // Use null-aware operator
+    dbService.saveData(resource!);
 
     Future.delayed(Duration(seconds: 2), () {
       setState(() {
@@ -93,16 +94,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _buyDrone() {
-    const cost = 50; // Cost of a drone
-    if (resource != null && resource!.noctilium >= cost) { // Ensure resource is not null
+    const cost = 50;
+    if (resource != null && resource!.noctilium >= cost) {
       setState(() {
-        resource!.noctilium -= cost; // Use null-aware operator
-        resource!.drones++; // Use null-aware operator
-        history.add("Drone acheté !");
+        resource!.noctilium -= cost;
+        resource!.drones++;
+        history.add("Drone acheté sur la planète 2 !");
       });
-      dbService.saveData(resource!); // Use null-aware operator
+      dbService.saveData(resource!);
     } else {
-      _showMessage("Pas assez de Noctilium pour acheter un drone");
+      _showMessage("Pas assez de Noctilium pour acheter un drone sur la planète 2");
     }
   }
 
@@ -115,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _createFallingWidget(String text, String iconPath, Offset position) {
     final controller = AnimationController(
       duration: Duration(milliseconds: 1200),
-      vsync: this, // <-- Important : _HomeScreenState doit étendre TickerProviderStateMixin
+      vsync: this,
     );
 
     final curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
@@ -156,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
 
-    // Supprimer le widget après l'animation
     controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         controller.dispose();
@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     autoCollectTimer?.cancel();
     bonusService.dispose();
     if (resource != null) {
-      dbService.saveData(resource!); // Sauvegarde à la fermeture
+      dbService.saveData(resource!);
     }
     dbService.closeDb();
     super.dispose();
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  "Theralis",
+                  "Verdorak",
                   style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -211,12 +211,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             scale: isClicked ? 1.2 : 1.0,
                             duration: Duration(milliseconds: 200),
                             child: Image.asset(
-                              'assets/images/first_planet.png',
+                              'assets/images/second_planet.png',
                               width: 300,
                               height: 300,
                             ),
                           ),
                         ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 20,
+                      top: MediaQuery.of(context).size.height / 2 - 150, // Adjusted position
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomeScreen()),
+                          );
+                        },
                       ),
                     ),
                     Positioned(
@@ -227,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
+                            MaterialPageRoute(builder: (context) => ThirdPlanetScreen()),
                           );
                         },
                       ),

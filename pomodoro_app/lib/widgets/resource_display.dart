@@ -14,33 +14,41 @@ class ResourceDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              'assets/images/noctilium.png',
-              width: 24,
-              height: 24,
+            Row(
+              children: [
+                Image.asset(
+                  'assets/images/noctilium.png',
+                  width: 32, // Increased size
+                  height: 32, // Increased size
+                ),
+                SizedBox(width: 8),
+                Text("Noctilium: $noctilium", style: TextStyle(fontSize: 18)),
+              ],
             ),
-            SizedBox(width: 8),
-            Text("Noctilium : $noctilium", style: TextStyle(fontSize: 18)),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                Image.asset(
+                  'assets/images/ferralyte.png',
+                  width: 32, // Increased size
+                  height: 32, // Increased size
+                ),
+                SizedBox(width: 8),
+                Text("Ferralyte: $ferralyte", style: TextStyle(fontSize: 18)),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text("Drones: $drones", style: TextStyle(fontSize: 18)),
           ],
         ),
-        Row(
-          children: [
-            Image.asset(
-              'assets/images/ferralyte.png',
-              width: 24,
-              height: 24,
-            ),
-            SizedBox(width: 8),
-            Text("Ferralyte : $ferralyte", style: TextStyle(fontSize: 18)),
-          ],
-        ),
-        Text("Drones : $drones", style: TextStyle(fontSize: 18)),
-      ],
+      ),
     );
   }
 }
