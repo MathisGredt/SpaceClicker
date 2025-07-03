@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../widgets/background_video.dart';
 import '../services/database_service.dart';
 import '../services/bonus_service.dart';
+import '../services/video_service.dart';
 import '../widgets/resource_display.dart';
 import '../widgets/drone_upgrade.dart';
 import '../models/resource_model.dart';
@@ -15,6 +17,7 @@ class SecondPlanetScreen extends StatefulWidget {
 }
 
 class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProviderStateMixin {
+  late VideoService videoService;
   bool isClicked = false;
   late DatabaseService dbService;
   late BonusService bonusService;
@@ -26,6 +29,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   @override
   void initState() {
     super.initState();
+    videoService = VideoService(); // Initialize videoService
     dbService = DatabaseService();
     bonusService = BonusService();
     _initAndLoad();
@@ -184,93 +188,63 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     return Scaffold(
       body: Stack(
         children: [
+          BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
           ResourceDisplay(
             drones: resource?.drones ?? 0,
             noctilium: resource?.noctilium ?? 0,
             ferralyte: resource?.ferralyte ?? 0,
           ),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  "Verdorak",
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          Center(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTapDown: _collectNoctilium,
+                child: AnimatedScale(
+                  scale: isClicked ? 1.2 : 1.0,
+                  duration: Duration(milliseconds: 200),
+                  child: Image.asset(
+                    'assets/images/second_planet.png',
+                    width: 300,
+                    height: 300,
+                  ),
                 ),
               ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    Center(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTapDown: _collectNoctilium,
-                          child: AnimatedScale(
-                            scale: isClicked ? 1.2 : 1.0,
-                            duration: Duration(milliseconds: 200),
-                            child: Image.asset(
-                              'assets/images/second_planet.png',
-                              width: 300,
-                              height: 300,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 20,
-                      top: MediaQuery.of(context).size.height / 2 - 150, // Adjusted position
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomeScreen()),
-                          );
-                        },
-                      ),
-                    ),
-                    Positioned(
-                      right: 20,
-                      top: MediaQuery.of(context).size.height / 2 - 150, // Adjusted position
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ThirdPlanetScreen()),
-                          );
-                        },
-                      ),
-                    ),
-                    ...fallingWidgets,
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              DroneUpgrade(
-                noctilium: resource?.noctilium ?? 0,
-                onBuyDrone: _buyDrone,
-              ),
-              SizedBox(height: 20),
-              Container(
-                height: 150,
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(12)),
-                child: ListView(
-                  children: history.reversed
-                      .map((e) => Text(
-                    e,
-                    style: TextStyle(color: Colors.white70),
-                  ))
-                      .toList(),
-                ),
-              ),
-            ],
+            ),
           ),
+          Positioned(
+            left: 20,
+            top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
+              onPressed: () {
+                videoService.disposeVideo();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
+              },
+            ),
+          ),
+          Positioned(
+            right: 20,
+            top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
+            child: IconButton(
+              icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
+              onPressed: () {
+                videoService.disposeVideo();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ThirdPlanetScreen()),
+                );
+              },
+            ),
+          ),
+          DroneUpgrade(
+            noctilium: resource?.noctilium ?? 0,
+            onBuyDrone: _buyDrone,
+          ),
+          ...fallingWidgets,
         ],
       ),
     );

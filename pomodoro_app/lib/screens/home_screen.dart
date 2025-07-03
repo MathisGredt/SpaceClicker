@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:video_player/video_player.dart';
+import '../widgets/background_video.dart';
 import '../services/database_service.dart';
 import '../services/bonus_service.dart';
+import '../services/video_service.dart';
 import '../widgets/resource_display.dart';
 import '../widgets/drone_upgrade.dart';
 import '../models/resource_model.dart';
@@ -18,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  late VideoService videoService;
   bool isClicked = false;
   late DatabaseService dbService;
   late BonusService bonusService;
@@ -25,41 +24,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
-  VideoPlayerController? _videoController;
 
   @override
   void initState() {
     super.initState();
+    videoService = VideoService();
     dbService = DatabaseService();
     bonusService = BonusService();
     _initAndLoad();
-    _loadAndPlayVideo();
-  }
-
-  Future<void> _loadAndPlayVideo() async {
-    try {
-      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        final bytes = await rootBundle.load('assets/videos/background.mp4');
-        final tempDir = await getTemporaryDirectory();
-        final file = File('${tempDir.path}/background_temp.mp4');
-        await file.writeAsBytes(bytes.buffer.asUint8List());
-
-        _videoController = VideoPlayerController.file(file);
-      } else {
-        _videoController = VideoPlayerController.asset('assets/videos/background.mp4');
-      }
-
-      await _videoController!.initialize();
-      _videoController!
-        ..setLooping(true)
-        ..setVolume(0)
-        ..play();
-
-      setState(() {});
-      print("✅ Vidéo initialisée avec succès");
-    } catch (error) {
-      print("❌ Erreur de chargement vidéo : $error");
-    }
   }
 
   Future<void> _initAndLoad() async {
@@ -207,7 +179,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       dbService.saveData(resource!);
     }
     dbService.closeDb();
-    _videoController?.dispose(); // Dispose the video controller
     super.dispose();
   }
 
@@ -216,17 +187,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: Stack(
         children: [
-          if (_videoController?.value.isInitialized ?? false)
-            SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _videoController!.value.size.width,
-                  height: _videoController!.value.size.height,
-                  child: VideoPlayer(_videoController!),
-                ),
-              ),
-            ),
+          BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
           ResourceDisplay(
             drones: resource?.drones ?? 0,
             noctilium: resource?.noctilium ?? 0,
@@ -255,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: IconButton(
               icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
               onPressed: () {
-                _videoController?.dispose();
+                videoService.disposeVideo();
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
