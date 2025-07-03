@@ -19,6 +19,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late VideoService videoService;
   bool isClicked = false;
+  bool isFading = false;
+  bool fadeOut = true; // New state for fade-out
   late DatabaseService dbService;
   late BonusService bonusService;
   Resource? resource;
@@ -33,6 +35,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     dbService = DatabaseService();
     bonusService = BonusService();
     _initAndLoad();
+
+    // Trigger fade-out animation on screen load
+    Future.delayed(Duration(milliseconds: 500), () {
+      setState(() {
+        fadeOut = false;
+      });
+    });
   }
 
   Future<void> _initAndLoad() async {
@@ -172,6 +181,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return widget;
   }
 
+  void _navigateToSecondPlanet() {
+    setState(() {
+      isFading = true;
+    });
+
+    Future.delayed(Duration(seconds: 1), () { // Increased delay to 1 second
+      videoService.disposeVideo();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
+      ).then((_) {
+        setState(() {
+          isFading = false;
+        });
+      });
+    });
+  }
+
   @override
   void dispose() {
     autoCollectTimer?.cancel();
@@ -216,13 +243,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
             child: IconButton(
               icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
-              onPressed: () {
-                videoService.disposeVideo();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
-                );
-              },
+              onPressed: _navigateToSecondPlanet,
             ),
           ),
           DroneUpgrade(
@@ -230,6 +251,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onBuyDrone: _buyDrone,
           ),
           ...fallingWidgets,
+          IgnorePointer(
+            ignoring: !isFading && !fadeOut, // Adjusted to handle both fade states
+            child: AnimatedOpacity(
+              opacity: isFading ? 1.0 : (fadeOut ? 1.0 : 0.0), // Handles fade-in and fade-out
+              duration: Duration(seconds: 1), // Increased duration to 1 second
+              child: Container(color: Colors.black),
+            ),
+          ),
         ],
       ),
     );

@@ -20,6 +20,8 @@ class SecondPlanetScreen extends StatefulWidget {
 class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProviderStateMixin {
   late VideoService videoService;
   bool isClicked = false;
+  bool isFading = false;
+  bool fadeOut = true; // New state for fade-out
   late DatabaseService dbService;
   late BonusService bonusService;
   Resource? resource;
@@ -30,10 +32,17 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   @override
   void initState() {
     super.initState();
-    videoService = VideoService(); // Initialize videoService
+    videoService = VideoService();
     dbService = DatabaseService();
     bonusService = BonusService();
     _initAndLoad();
+
+    // Trigger fade-out animation on screen load
+    Future.delayed(Duration(seconds: 1), () {
+      setState(() {
+        fadeOut = false;
+      });
+    });
   }
 
   Future<void> _initAndLoad() async {
@@ -59,118 +68,40 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     });
   }
 
-  void _collectNoctilium(TapDownDetails details) {
-    if (resource == null) return;
-
-    RenderBox box = context.findRenderObject() as RenderBox;
-    Offset localPosition = box.globalToLocal(details.globalPosition);
-
+  void _navigateToHomeScreen() {
     setState(() {
-      isClicked = true;
+      isFading = true;
     });
 
-    Future.delayed(Duration(milliseconds: 200), () {
-      setState(() {
-        isClicked = false;
-      });
-    });
-
-    setState(() {
-      resource!.noctilium++;
-      resource!.totalCollected++;
-
-      fallingWidgets.add(_createFallingWidget(
-        "+1",
-        'assets/images/noctilium.png',
-        localPosition,
-      ));
-    });
-
-    dbService.saveData(resource!);
-
-    Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        if (fallingWidgets.isNotEmpty) {
-          fallingWidgets.removeAt(0);
-        }
-      });
-    });
-  }
-
-  void _buyDrone() {
-    const cost = 50;
-    if (resource != null && resource!.noctilium >= cost) {
-      setState(() {
-        resource!.noctilium -= cost;
-        resource!.drones++;
-        history.add("Drone acheté sur la planète 2 !");
-      });
-      dbService.saveData(resource!);
-    } else {
-      _showMessage("Pas assez de Noctilium pour acheter un drone sur la planète 2");
-    }
-  }
-
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
-  }
-
-  Widget _createFallingWidget(String text, String iconPath, Offset position) {
-    final controller = AnimationController(
-      duration: Duration(milliseconds: 1200),
-      vsync: this,
-    );
-
-    final curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
-
-    final verticalAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: -60.0).chain(CurveTween(curve: Curves.easeOut)), weight: 0.3),
-      TweenSequenceItem(tween: Tween(begin: -60.0, end: 100.0).chain(CurveTween(curve: Curves.easeIn)), weight: 0.7),
-    ]).animate(curve);
-
-    final horizontalOffset = Random().nextBool() ? 30.0 : -30.0;
-    final horizontalAnimation = Tween<double>(begin: 0, end: horizontalOffset).animate(curve);
-
-    final opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(curve);
-
-    controller.forward();
-
-    final widget = AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        return Positioned(
-          top: position.dy + verticalAnimation.value,
-          left: position.dx + horizontalAnimation.value,
-          child: Opacity(
-            opacity: opacityAnimation.value,
-            child: child,
-          ),
-        );
-      },
-      child: Row(
-        children: [
-          Image.asset(iconPath, width: 24, height: 24),
-          SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(fontSize: 16, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-
-    controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
+    Future.delayed(Duration(seconds: 1), () {
+      videoService.disposeVideo();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      ).then((_) {
         setState(() {
-          fallingWidgets.remove(widget);
+          isFading = false;
         });
-      }
+      });
+    });
+  }
+
+  void _navigateToThirdPlanet() {
+    setState(() {
+      isFading = true;
     });
 
-    return widget;
+    Future.delayed(Duration(seconds: 1), () {
+      videoService.disposeVideo();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ThirdPlanetScreen()),
+      ).then((_) {
+        setState(() {
+          isFading = false;
+        });
+      });
+    });
   }
 
   @override
@@ -199,7 +130,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
-                onTapDown: _collectNoctilium,
+                onTapDown: (details) {},
                 child: AnimatedScale(
                   scale: isClicked ? 1.2 : 1.0,
                   duration: Duration(milliseconds: 200),
@@ -214,38 +145,28 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           ),
           Positioned(
             left: 20,
-            top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
+            top: MediaQuery.of(context).size.height / 2 - 150 + 150,
             child: IconButton(
               icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
-              onPressed: () {
-                videoService.disposeVideo();
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                );
-              },
+              onPressed: _navigateToHomeScreen,
             ),
           ),
           Positioned(
             right: 20,
-            top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
+            top: MediaQuery.of(context).size.height / 2 - 150 + 150,
             child: IconButton(
               icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
-              onPressed: () {
-                videoService.disposeVideo();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ThirdPlanetScreen()),
-                );
-              },
+              onPressed: _navigateToThirdPlanet,
             ),
           ),
-          DroneUpgrade(
-            noctilium: resource?.noctilium ?? 0,
-            onBuyDrone: _buyDrone,
+          IgnorePointer(
+            ignoring: !isFading && !fadeOut,
+            child: AnimatedOpacity(
+              opacity: isFading ? 1.0 : (fadeOut ? 1.0 : 0.0),
+              duration: Duration(seconds: 1),
+              child: Container(color: Colors.black),
+            ),
           ),
-          ...fallingWidgets,
         ],
       ),
     );
