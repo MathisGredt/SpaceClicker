@@ -17,17 +17,23 @@ class DatabaseService {
 
     _db = await openDatabase(
       path,
-      version: 1,
-      onCreate: (db, version) {
-        db.execute('''
+      version: 2,
+      onCreate: (db, version) async {
+        await db.execute('''
           CREATE TABLE $_tableName (
             id INTEGER PRIMARY KEY,
             noctilium INTEGER,
             ferralyte INTEGER,
             drones INTEGER,
-            totalCollected INTEGER
+            totalCollected INTEGER,
+            bonus REAL DEFAULT 1.0
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN bonus REAL DEFAULT 1.0');
+        }
       },
     );
   }
@@ -48,12 +54,14 @@ class DatabaseService {
         'ferralyte': 0,
         'drones': 0,
         'totalCollected': 0,
+        'bonus': 1.0,
       });
       return Resource(
         noctilium: 0,
         ferralyte: 0,
         drones: 0,
         totalCollected: 0,
+        bonus: 1.0,
       );
     }
   }

@@ -1,60 +1,45 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../widgets/background_video.dart';
-import '../services/database_service.dart';
-import '../services/bonus_service.dart';
-import "../services/video_service.dart";
-import '../widgets/resource_display.dart';
+import '../services/video_service.dart';
 import '../widgets/drone_upgrade.dart';
+import '../widgets/retro_terminal_left.dart';
+import '../widgets/retro_terminal_right.dart';
 import '../models/resource_model.dart';
 import 'second_planet_screen.dart';
+import '../services/game_service.dart';
 
-
-class ThirdPlanetScreen extends StatefulWidget {
+class HomeScreen extends StatefulWidget {
   @override
-  _ThirdPlanetScreenState createState() => _ThirdPlanetScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late VideoService videoService;
+
+  // Utilisation du singleton
+  final GameService gameService = GameService.instance;
+
   bool isClicked = false;
-  late DatabaseService dbService;
-  late BonusService bonusService;
-  Resource? resource;
-  List<String> history = [];
-  Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
+
+  Resource? get resource => gameService.resource;
+  List<String> get history => gameService.getHistory();
 
   @override
   void initState() {
     super.initState();
-    videoService = VideoService(); // Initialize videoService
-    dbService = DatabaseService();
-    bonusService = BonusService();
-    _initAndLoad();
-  }
+    videoService = VideoService();
 
-  Future<void> _initAndLoad() async {
-    await dbService.initDb();
-    final loaded = await dbService.loadData();
-    setState(() {
-      resource = loaded;
-    });
-    _startAutoCollect();
-  }
+    // Init idempotente dans GameService
+    gameService.init().then((_) {
+      gameService.startAutoCollect(() {
+        if (mounted) {
+          setState(() {});
+        }
+      });
 
-  void _startAutoCollect() {
-    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource != null && resource!.drones > 0) {
-        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
-        setState(() {
-          resource!.noctilium += collected;
-          resource!.totalCollected += collected;
-          history.add("Drones ont collecté $collected noctilium sur la planète 3");
-        });
-        dbService.saveData(resource!);
-      }
+      setState(() {}); // Pour afficher les ressources chargées
     });
   }
 
@@ -66,17 +51,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
     setState(() {
       isClicked = true;
-    });
-
-    Future.delayed(Duration(milliseconds: 200), () {
-      setState(() {
-        isClicked = false;
-      });
-    });
-
-    setState(() {
-      resource!.noctilium++;
-      resource!.totalCollected++;
+      gameService.collectNoctilium();
 
       fallingWidgets.add(_createFallingWidget(
         "+1",
@@ -85,7 +60,11 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
       ));
     });
 
-    dbService.saveData(resource!);
+    Future.delayed(Duration(milliseconds: 200), () {
+      setState(() {
+        isClicked = false;
+      });
+    });
 
     Future.delayed(Duration(seconds: 2), () {
       setState(() {
@@ -96,24 +75,22 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     });
   }
 
-  void _buyDrone() {
-    const cost = 50;
-    if (resource != null && resource!.noctilium >= cost) {
-      setState(() {
-        resource!.noctilium -= cost;
-        resource!.drones++;
-        history.add("Drone acheté sur la planète 3 !");
-      });
-      dbService.saveData(resource!);
-    } else {
-      _showMessage("Pas assez de Noctilium pour acheter un drone sur la planète 3");
+  void _attemptBuyDrone() {
+    final success = gameService.buyDrone();
+    if (!success) {
+      _showMessage("Pas assez de Noctilium pour acheter un drone");
     }
+    setState(() {});
   }
 
   void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void _handleCommand(String cmd) {
+    setState(() {
+      gameService.handleCommand(cmd);
+    });
   }
 
   Widget _createFallingWidget(String text, String iconPath, Offset position) {
@@ -125,13 +102,16 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     final curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
 
     final verticalAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: -60.0).chain(CurveTween(curve: Curves.easeOut)), weight: 0.3),
-      TweenSequenceItem(tween: Tween(begin: -60.0, end: 100.0).chain(CurveTween(curve: Curves.easeIn)), weight: 0.7),
+      TweenSequenceItem(
+          tween: Tween(begin: 0.0, end: -60.0).chain(CurveTween(curve: Curves.easeOut)),
+          weight: 0.3),
+      TweenSequenceItem(
+          tween: Tween(begin: -60.0, end: 100.0).chain(CurveTween(curve: Curves.easeIn)),
+          weight: 0.7),
     ]).animate(curve);
 
     final horizontalOffset = Random().nextBool() ? 30.0 : -30.0;
     final horizontalAnimation = Tween<double>(begin: 0, end: horizontalOffset).animate(curve);
-
     final opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(curve);
 
     controller.forward();
@@ -174,12 +154,8 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
   @override
   void dispose() {
-    autoCollectTimer?.cancel();
-    bonusService.dispose();
-    if (resource != null) {
-      dbService.saveData(resource!);
-    }
-    dbService.closeDb();
+    // Ne pas disposer gameService pour garder timer actif
+    videoService.disposeVideo();
     super.dispose();
   }
 
@@ -189,11 +165,22 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
       body: Stack(
         children: [
           BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
-          ResourceDisplay(
-            drones: resource?.drones ?? 0,
-            noctilium: resource?.noctilium ?? 0,
-            ferralyte: resource?.ferralyte ?? 0,
+
+          Positioned(
+            top: 40,
+            left: 20,
+            child: RetroTerminalLeft(resource: resource),
           ),
+
+          Positioned(
+            top: 40,
+            right: 20,
+            child: RetroTerminalRight(
+              history: history,
+              onCommand: _handleCommand,
+            ),
+          ),
+
           Center(
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
@@ -203,7 +190,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
                   scale: isClicked ? 1.2 : 1.0,
                   duration: Duration(milliseconds: 200),
                   child: Image.asset(
-                    'assets/images/third_planet.png',
+                    'assets/images/first_planet.png',
                     width: 300,
                     height: 300,
                   ),
@@ -211,14 +198,13 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
               ),
             ),
           ),
-          Positioned(
-            left: 20,
-            top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
-              onPressed: () {
-                videoService.disposeVideo();
 
+          Positioned(
+            right: 20,
+            top: MediaQuery.of(context).size.height / 2,
+            child: IconButton(
+              icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
@@ -226,10 +212,12 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
               },
             ),
           ),
+
           DroneUpgrade(
             noctilium: resource?.noctilium ?? 0,
-            onBuyDrone: _buyDrone,
+            onBuyDrone: _attemptBuyDrone,
           ),
+
           ...fallingWidgets,
         ],
       ),

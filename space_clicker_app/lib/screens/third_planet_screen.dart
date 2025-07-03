@@ -1,59 +1,43 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../widgets/background_video.dart';
-import '../services/database_service.dart';
-import '../services/bonus_service.dart';
 import '../services/video_service.dart';
-import '../widgets/resource_display.dart';
+import '../services/game_service.dart';
 import '../widgets/drone_upgrade.dart';
+import '../widgets/retro_terminal_left.dart';
+import '../widgets/retro_terminal_right.dart';
 import '../models/resource_model.dart';
 import 'second_planet_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class ThirdPlanetScreen extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _ThirdPlanetScreenState createState() => _ThirdPlanetScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProviderStateMixin {
   late VideoService videoService;
+  // Utilisation du singleton GameService
+  final GameService gameService = GameService.instance;
+
   bool isClicked = false;
-  late DatabaseService dbService;
-  late BonusService bonusService;
-  Resource? resource;
-  List<String> history = [];
-  Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
+
+  Resource? get resource => gameService.resource;
+  List<String> get history => gameService.getHistory();
 
   @override
   void initState() {
     super.initState();
     videoService = VideoService();
-    dbService = DatabaseService();
-    bonusService = BonusService();
-    _initAndLoad();
-  }
 
-  Future<void> _initAndLoad() async {
-    await dbService.initDb();
-    final loaded = await dbService.loadData();
-    setState(() {
-      resource = loaded;
-    });
-    _startAutoCollect();
-  }
+    gameService.init().then((_) {
+      gameService.startAutoCollect(() {
+        if (mounted) {
+          setState(() {});
+        }
+      });
 
-  void _startAutoCollect() {
-    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource != null && resource!.drones > 0) {
-        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
-        setState(() {
-          resource!.noctilium += collected;
-          resource!.totalCollected += collected;
-          history.add("Drones ont collecté $collected noctilium");
-        });
-        dbService.saveData(resource!);
-      }
+      setState(() {}); // Pour afficher les ressources chargées
     });
   }
 
@@ -65,17 +49,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     setState(() {
       isClicked = true;
-    });
-
-    Future.delayed(Duration(milliseconds: 200), () {
-      setState(() {
-        isClicked = false;
-      });
-    });
-
-    setState(() {
-      resource!.noctilium++;
-      resource!.totalCollected++;
+      gameService.collectNoctilium();
 
       fallingWidgets.add(_createFallingWidget(
         "+1",
@@ -84,35 +58,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ));
     });
 
-    dbService.saveData(resource!);
+    Future.delayed(Duration(milliseconds: 200), () {
+      setState(() {
+        isClicked = false;
+      });
+    });
 
     Future.delayed(Duration(seconds: 2), () {
       setState(() {
-        if (fallingWidgets.isNotEmpty) {
-          fallingWidgets.removeAt(0);
-        }
+        if (fallingWidgets.isNotEmpty) fallingWidgets.removeAt(0);
       });
     });
   }
 
-  void _buyDrone() {
-    const cost = 50;
-    if (resource != null && resource!.noctilium >= cost) {
-      setState(() {
-        resource!.noctilium -= cost;
-        resource!.drones++;
-        history.add("Drone acheté !");
-      });
-      dbService.saveData(resource!);
-    } else {
-      _showMessage("Pas assez de Noctilium pour acheter un drone");
+  void _attemptBuyDrone() {
+    final success = gameService.buyDrone();
+    if (!success) {
+      _showMessage("Pas assez de Noctilium pour acheter un drone sur la planète 3");
     }
+    setState(() {});
   }
 
   void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Widget _createFallingWidget(String text, String iconPath, Offset position) {
@@ -141,20 +109,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return Positioned(
           top: position.dy + verticalAnimation.value,
           left: position.dx + horizontalAnimation.value,
-          child: Opacity(
-            opacity: opacityAnimation.value,
-            child: child,
-          ),
+          child: Opacity(opacity: opacityAnimation.value, child: child),
         );
       },
       child: Row(
         children: [
           Image.asset(iconPath, width: 24, height: 24),
           SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(fontSize: 16, color: Colors.white),
-          ),
+          Text(text, style: TextStyle(fontSize: 16, color: Colors.white)),
         ],
       ),
     );
@@ -173,12 +135,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    autoCollectTimer?.cancel();
-    bonusService.dispose();
-    if (resource != null) {
-      dbService.saveData(resource!);
-    }
-    dbService.closeDb();
+    // Ne pas disposer gameService ici pour garder timer actif
+    videoService.disposeVideo();
     super.dispose();
   }
 
@@ -188,11 +146,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       body: Stack(
         children: [
           BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
-          ResourceDisplay(
-            drones: resource?.drones ?? 0,
-            noctilium: resource?.noctilium ?? 0,
-            ferralyte: resource?.ferralyte ?? 0,
+
+          Positioned(
+            top: 40,
+            left: 20,
+            child: RetroTerminalLeft(resource: resource),
           ),
+
+          Positioned(
+            top: 40,
+            right: 20,
+            child: RetroTerminalRight(
+              history: history,
+              onCommand: (cmd) {
+                setState(() {
+                  gameService.handleCommand(cmd);
+                });
+              },
+            ),
+          ),
+
           Center(
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
@@ -202,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   scale: isClicked ? 1.2 : 1.0,
                   duration: Duration(milliseconds: 200),
                   child: Image.asset(
-                    'assets/images/first_planet.png',
+                    'assets/images/third_planet.png',
                     width: 300,
                     height: 300,
                   ),
@@ -210,24 +183,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+
           Positioned(
-            right: 20,
-            top: MediaQuery.of(context).size.height / 2 - 150 + 150, // Adjusted position
+            left: 20,
+            top: MediaQuery.of(context).size.height / 2,
             child: IconButton(
-              icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
+              icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
               onPressed: () {
                 videoService.disposeVideo();
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
                 );
               },
             ),
           ),
+
           DroneUpgrade(
             noctilium: resource?.noctilium ?? 0,
-            onBuyDrone: _buyDrone,
+            onBuyDrone: _attemptBuyDrone,
           ),
+
           ...fallingWidgets,
         ],
       ),
