@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:video_player/video_player.dart';
 import '../services/database_service.dart';
 import '../services/bonus_service.dart';
 import '../widgets/resource_display.dart';
@@ -21,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
+  VideoPlayerController? _videoController;
 
   @override
   void initState() {
@@ -28,6 +33,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     dbService = DatabaseService();
     bonusService = BonusService();
     _initAndLoad();
+
+    _loadAndPlayVideo(); // ← nouvelle méthode
+  }
+
+  Future<void> _loadAndPlayVideo() async {
+    try {
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        final bytes = await rootBundle.load('assets/videos/background.mp4');
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/background_temp.mp4');
+        await file.writeAsBytes(bytes.buffer.asUint8List());
+
+        _videoController = VideoPlayerController.file(file);
+      } else {
+        _videoController = VideoPlayerController.asset('assets/videos/background.mp4');
+      }
+
+      await _videoController!.initialize();
+      _videoController!
+        ..setLooping(true)
+        ..setVolume(0)
+        ..play();
+
+      setState(() {});
+      print("✅ Vidéo initialisée avec succès");
+    } catch (error) {
+      print("❌ Erreur de chargement vidéo : $error");
+    }
   }
 
   Future<void> _initAndLoad() async {
@@ -54,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _collectNoctilium(TapDownDetails details) {
-    if (resource == null) return; // Ensure resource is not null
+    if (resource == null) return;
 
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset localPosition = box.globalToLocal(details.globalPosition);
@@ -70,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     setState(() {
-      resource!.noctilium++; // Use null-aware operator
+      resource!.noctilium++;
       resource!.totalCollected++;
       history.add("Clique +1 Noctilium");
 
@@ -81,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ));
     });
 
-    dbService.saveData(resource!); // Use null-aware operator
+    dbService.saveData(resource!);
 
     Future.delayed(Duration(seconds: 2), () {
       setState(() {
@@ -93,14 +126,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _buyDrone() {
-    const cost = 50; // Cost of a drone
-    if (resource != null && resource!.noctilium >= cost) { // Ensure resource is not null
+    const cost = 50;
+    if (resource != null && resource!.noctilium >= cost) {
       setState(() {
-        resource!.noctilium -= cost; // Use null-aware operator
-        resource!.drones++; // Use null-aware operator
+        resource!.noctilium -= cost;
+        resource!.drones++;
         history.add("Drone acheté !");
       });
-      dbService.saveData(resource!); // Use null-aware operator
+      dbService.saveData(resource!);
     } else {
       _showMessage("Pas assez de Noctilium pour acheter un drone");
     }
@@ -115,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _createFallingWidget(String text, String iconPath, Offset position) {
     final controller = AnimationController(
       duration: Duration(milliseconds: 1200),
-      vsync: this, // <-- Important : _HomeScreenState doit étendre TickerProviderStateMixin
+      vsync: this,
     );
 
     final curve = CurvedAnimation(parent: controller, curve: Curves.easeOut);
@@ -156,7 +189,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
 
-    // Supprimer le widget après l'animation
     controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         controller.dispose();
@@ -174,9 +206,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     autoCollectTimer?.cancel();
     bonusService.dispose();
     if (resource != null) {
-      dbService.saveData(resource!); // Sauvegarde à la fermeture
+      dbService.saveData(resource!);
     }
     dbService.closeDb();
+    _videoController?.dispose();
     super.dispose();
   }
 
@@ -190,32 +223,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             noctilium: resource?.noctilium ?? 0,
             ferralyte: resource?.ferralyte ?? 0,
           ),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  "Theralis",
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    Center(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTapDown: _collectNoctilium,
-                          child: AnimatedScale(
-                            scale: isClicked ? 1.2 : 1.0,
-                            duration: Duration(milliseconds: 200),
-                            child: Image.asset(
-                              'assets/images/first_planet.png',
-                              width: 300,
-                              height: 300,
-                            ),
-                          ),
+          Expanded(
+            child: Stack(
+              children: [
+                if (_videoController?.value.isInitialized ?? false)
+                  SizedBox.expand(
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _videoController!.value.size.width,
+                        height: _videoController!.value.size.height,
+                        child: VideoPlayer(_videoController!),
+                      ),
+                    ),
+                  ),
+                Container(color: Colors.black.withOpacity(0.3)),
+                Center(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTapDown: _collectNoctilium,
+                      child: AnimatedScale(
+                        scale: isClicked ? 1.2 : 1.0,
+                        duration: Duration(milliseconds: 200),
+                        child: Image.asset(
+                          'assets/images/first_planet.png',
+                          width: 300,
+                          height: 300,
                         ),
                       ),
                     ),
