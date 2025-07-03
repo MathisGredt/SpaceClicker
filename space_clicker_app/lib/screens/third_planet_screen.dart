@@ -29,11 +29,10 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
   bool fadeOut = true; // New state for fade-out
   late DatabaseService dbService;
   late BonusService bonusService;
+  Resource? resource;
+  List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
-
-  Resource? get resource => gameService.resource;
-  List<String> get history => gameService.getHistory();
 
   @override
   void initState() {
@@ -51,6 +50,14 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     });
   }
 
+  Future<void> _initAndLoad() async {
+    await dbService.initDb();
+    final loaded = await dbService.loadData();
+    setState(() {
+      resource = loaded;
+    });
+    _startAutoCollect();
+
     gameService.init().then((_) {
       gameService.startAutoCollect(() {
         if (mounted) {
@@ -59,6 +66,20 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
       });
 
       setState(() {}); // Pour afficher les ressources chargées
+    });
+  }
+
+  void _startAutoCollect() {
+    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
+      if (resource != null && resource!.drones > 0) {
+        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
+        setState(() {
+          resource!.noctilium += collected;
+          resource!.totalCollected += collected;
+          history.add("Drones ont collecté $collected noctilium sur la planète 3");
+        });
+        dbService.saveData(resource!);
+      }
     });
   }
 
@@ -98,6 +119,12 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg)),
     );
+  }
+
+  void _handleCommand(String cmd) {
+    setState(() {
+      gameService.handleCommand(cmd);
+    });
   }
 
   Widget _createFallingWidget(String text, String iconPath, Offset position) {
@@ -158,7 +185,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
   @override
   void dispose() {
-    // Ne pas disposer gameService ici pour garder timer actif
+    // Ne pas disposer gameService ici pour garder son état et timers actifs
     videoService.disposeVideo();
     super.dispose();
   }
@@ -181,11 +208,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
             right: 20,
             child: RetroTerminalRight(
               history: history,
-              onCommand: (cmd) {
-                setState(() {
-                  gameService.handleCommand(cmd);
-                });
-              },
+              onCommand: _handleCommand,
             ),
           ),
 

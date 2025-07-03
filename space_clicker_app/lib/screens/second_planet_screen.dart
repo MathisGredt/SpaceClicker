@@ -30,11 +30,10 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   bool fadeOut = true; // New state for fade-out
   late DatabaseService dbService;
   late BonusService bonusService;
+  Resource? resource;
+  List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
-
-  Resource? get resource => gameService.resource;
-  List<String> get history => gameService.getHistory();
 
   @override
   void initState() {
@@ -59,14 +58,29 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
       resource = loaded;
     });
     _startAutoCollect();
-  }
 
     gameService.init().then((_) {
-      // Démarre la collecte automatique avec callback setState
       gameService.startAutoCollect(() {
-        if (mounted) setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       });
-      setState(() {});
+
+      setState(() {}); // To display loaded resources
+    });
+  }
+
+  void _startAutoCollect() {
+    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
+      if (resource != null && resource!.drones > 0) {
+        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
+        setState(() {
+          resource!.noctilium += collected;
+          resource!.totalCollected += collected;
+          history.add("Drones ont collecté $collected noctilium sur la planète 2");
+        });
+        dbService.saveData(resource!);
+      }
     });
   }
 
@@ -92,7 +106,6 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     setState(() {
       isFading = true;
     });
-  }
 
     Future.delayed(Duration(seconds: 1), () {
       videoService.disposeVideo();
@@ -104,6 +117,9 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           isFading = false;
         });
       });
+    });
+  }
+
   void _attemptBuyDrone() {
     final success = gameService.buyDrone();
     if (!success) {

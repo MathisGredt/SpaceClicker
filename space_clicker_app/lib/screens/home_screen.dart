@@ -35,9 +35,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
 
-  Resource? get resource => gameService.resource;
-  List<String> get history => gameService.getHistory();
-
   @override
   void initState() {
     super.initState();
@@ -54,7 +51,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-    // Init idempotente dans GameService
+  Future<void> _initAndLoad() async {
+    await dbService.initDb();
+    final loaded = await dbService.loadData();
+    setState(() {
+      resource = loaded;
+    });
+
     gameService.init().then((_) {
       gameService.startAutoCollect(() {
         if (mounted) {
@@ -267,3 +270,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
+}
