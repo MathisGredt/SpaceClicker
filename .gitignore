@@ -1,13 +1,88 @@
 # Flutter build files
 build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
 
 # Dart tool files
 .dart_tool/
 
-# IntelliJ / Android Studio files
+# IntelliJ IDEA / Android Studio files
 .idea/
 *.iml
 
-# OS files
+# Gradle files
+.gradle/
+build/
+
+# Java and Kotlin compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# C++ build files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.o
+*.obj
+*.so
+*.dll
+*.pdb
+*.exe
+
+# OS generated files
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Git files
+.git/
+.gitignore
+
+# Generated files
+*.generated.dart
+*.g.dart
+
+# Exclude user-specific files
+*.user
+*.local
+*.env
+
+# Exclude test coverage files
+coverage/
+lcov.info
+
+# Exclude IDE-specific settings
+.vscode/
+*.code-workspace
+
+# Exclude Flutter assets
+assets/generated/
+
+# Exclude binary files
+*.bin
+*.apk
+*.ipa
+*.deb
+*.rpm
+*.msi
+*.zip
+*.tar.gz
+*.tgz
+*.xz
+*.7z
+
+# Exclude temporary files created by editors
+*.~undo-tree
+*.~undo
+*.~lock
