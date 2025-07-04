@@ -1,5 +1,7 @@
 class Resource {
-  int drones;
+  int noctiliumDrones;
+  int verdaniteDrones;
+  int ignitiumDrones;
   int totalCollected;
   int noctilium;
   int ferralyte;
@@ -10,7 +12,9 @@ class Resource {
   double bonus;
 
   Resource({
-    required this.drones,
+    required this.noctiliumDrones,
+    required this.verdaniteDrones,
+    required this.ignitiumDrones,
     required this.totalCollected,
     this.noctilium = 0,
     this.ferralyte = 0,
@@ -23,7 +27,9 @@ class Resource {
 
   Map<String, dynamic> toMap() {
     return {
-      'drones': drones,
+      'noctiliumDrones': noctiliumDrones,
+      'verdaniteDrones': verdaniteDrones,
+      'ignitiumDrones': ignitiumDrones,
       'totalCollected': totalCollected,
       'noctilium': noctilium,
       'ferralyte': ferralyte,
@@ -37,7 +43,9 @@ class Resource {
 
   factory Resource.fromMap(Map<String, dynamic> map) {
     return Resource(
-      drones: map['drones'] as int,
+      noctiliumDrones: map['noctiliumDrones'] as int? ?? 0,
+      verdaniteDrones: map['verdaniteDrones'] as int? ?? 0,
+      ignitiumDrones: map['ignitiumDrones'] as int? ?? 0,
       totalCollected: map['totalCollected'] as int,
       noctilium: map['noctilium'] as int? ?? 0,
       ferralyte: map['ferralyte'] as int? ?? 0,

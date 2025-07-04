@@ -58,15 +58,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     gameService.init().then((_) {
-      gameService.startAutoCollect(() {
-        if (mounted) {
-          setState(() {
-            resource = gameService.resource;
-          });
-        }
-      });
-
-      setState(() {}); // Pour afficher les ressources chargées
+      gameService.collectAllResources();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -102,21 +97,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  void _attemptBuyDrone() {
-    final success = gameService.buyDrone();
-    if (!success) {
-      _showMessage("Pas assez de Noctilium pour acheter un drone");
-    }
-    setState(() {});
-  }
-
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  void _handleCommand(String cmd) {
+  void _navigateToSecondPlanet() {
     setState(() {
-      gameService.handleCommand(cmd, context);
+      isFading = true;
+    });
+
+    Future.delayed(Duration(seconds: 1), () {
+      videoService.disposeVideo();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
+      ).then((_) {
+        setState(() {
+          isFading = false;
+        });
+      });
     });
   }
 
@@ -179,27 +174,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return widget;
   }
 
-  void _navigateToSecondPlanet() {
-    setState(() {
-      isFading = true;
-    });
-
-    Future.delayed(Duration(seconds: 1), () { // Increased delay to 1 second
-      videoService.disposeVideo();
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
-      ).then((_) {
-        setState(() {
-          isFading = false;
-        });
-      });
-    });
-  }
-
   @override
   void dispose() {
-    // Ne pas disposer gameService pour garder timer actif
+    // Ne pas disposer gameService ici pour garder son état et timers actifs
     videoService.disposeVideo();
     super.dispose();
   }
@@ -217,11 +194,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             right: 0,
             child: Center(
               child: Text(
-                "Theralis",
+                "Home Planet",
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.greenAccent,
+                  color: Colors.blueAccent,
                   shadows: [
                     Shadow(
                       offset: Offset(2, 2),
@@ -245,7 +222,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             right: 20,
             child: RetroTerminalRight(
               history: history,
-              onCommand: _handleCommand,
+              onCommand: (cmd) {
+                setState(() {
+                  gameService.handleCommand(cmd, context);
+                });
+              },
             ),
           ),
 
@@ -269,13 +250,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
           Positioned(
             right: 20,
-            top: MediaQuery.of(context).size.height / 2,
+            top: MediaQuery.of(context).size.height / 2 - 150 + 150,
             child: IconButton(
               icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
               onPressed: _navigateToSecondPlanet,
             ),
           ),
-          ...fallingWidgets,
           IgnorePointer(
             ignoring: !isFading && !fadeOut,
             child: AnimatedOpacity(
@@ -284,6 +264,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Container(color: Colors.black),
             ),
           ),
+          ...fallingWidgets,
         ],
       ),
     );

@@ -40,11 +40,11 @@ class RetroTerminalLeft extends StatelessWidget {
             style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
           ),
           Text(
-            "Amarenthite: ${resource?.amarenthite ?? 0}", // ✅ Ajout Amarenthite
+            "Amarenthite: ${resource?.amarenthite ?? 0}",
             style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
           ),
           Text(
-            "Crimsite: ${resource?.crimsite ?? 0}",       // ✅ Ajout Crimsite
+            "Crimsite: ${resource?.crimsite ?? 0}",
             style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
           ),
         ],

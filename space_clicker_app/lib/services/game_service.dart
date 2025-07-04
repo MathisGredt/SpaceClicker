@@ -22,7 +22,9 @@ class GameService {
   Resource? resource;
   List<String> history = [];
 
-  Timer? autoCollectTimer;
+  Timer? noctiliumAutoCollectTimer;
+  Timer? verdaniteAutoCollectTimer;
+  Timer? ignitiumAutoCollectTimer;
 
   Future<void> init() async {
     await dbService.initDb();
@@ -30,18 +32,25 @@ class GameService {
   }
 
   void dispose() {
-    autoCollectTimer?.cancel();
+    noctiliumAutoCollectTimer?.cancel();
+    verdaniteAutoCollectTimer?.cancel();
+    ignitiumAutoCollectTimer?.cancel();
     bonusService.dispose();
     if (resource != null) dbService.saveData(resource!);
     dbService.closeDb();
   }
 
-  void startAutoCollect(VoidCallback onUpdate) {
-    autoCollectTimer?.cancel();
+  void collectAllResources() {
+    collectNoctilium();
+    collectVerdanite();
+    collectIgnitium();
+  }
 
-    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource != null && resource!.drones > 0) {
-        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
+  void startNoctiliumAutoCollect(VoidCallback onUpdate) {
+    noctiliumAutoCollectTimer?.cancel();
+    noctiliumAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
+      if (resource != null && resource!.noctiliumDrones > 0) {
+        final collected = (resource!.noctiliumDrones * 2 * bonusService.bonusMultiplier).round();
         resource!.noctilium += collected;
         resource!.totalCollected += collected;
         dbService.saveData(resource!);
@@ -57,18 +66,89 @@ class GameService {
     dbService.saveData(resource!);
   }
 
-  bool buyDrone() {
-    const cost = 50;
-    if (resource != null && resource!.noctilium >= cost) {
-      resource!.noctilium -= cost;
-      resource!.drones++;
-      history.add("Drone acheté !");
-      dbService.saveData(resource!);
-      return true;
-    } else {
-      history.add("Pas assez de Noctilium pour acheter un drone");
-      return false;
+  void startVerdaniteAutoCollect(VoidCallback onUpdate) {
+    verdaniteAutoCollectTimer?.cancel();
+    verdaniteAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
+      if (resource != null && resource!.verdaniteDrones > 0) {
+        final collected = (resource!.verdaniteDrones * 2 * bonusService.bonusMultiplier).round();
+        resource!.verdanite += collected;
+        resource!.totalCollected += collected;
+        dbService.saveData(resource!);
+        onUpdate();
+      }
+    });
+  }
+
+  void collectVerdanite() {
+    if (resource == null) return;
+    resource!.verdanite++;
+    resource!.totalCollected++;
+    dbService.saveData(resource!);
+  }
+
+  void startIgnitiumAutoCollect(VoidCallback onUpdate) {
+    ignitiumAutoCollectTimer?.cancel();
+    ignitiumAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
+      if (resource != null && resource!.ignitiumDrones > 0) {
+        final collected = (resource!.ignitiumDrones * 2 * bonusService.bonusMultiplier).round();
+        resource!.ignitium += collected;
+        resource!.totalCollected += collected;
+        dbService.saveData(resource!);
+        onUpdate();
+      }
+    });
+  }
+
+  void collectIgnitium() {
+    if (resource == null) return;
+    resource!.ignitium++;
+    resource!.totalCollected++;
+    dbService.saveData(resource!);
+  }
+
+  void _showMessage(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void _attemptBuyDrone(String droneType, BuildContext context) {
+    const cost = 50; // Coût fixe pour chaque drone
+    if (resource == null) return;
+
+    switch (droneType) {
+      case 'noctilium':
+        if (resource!.noctilium >= cost) {
+          resource!.noctilium -= cost;
+          resource!.noctiliumDrones++;
+          _showMessage(context, "Drone de Noctilium acheté !");
+        } else {
+          _showMessage(context, "Pas assez de Noctilium pour acheter ce drone.");
+        }
+        break;
+
+      case 'verdanite':
+        if (resource!.verdanite >= cost) {
+          resource!.verdanite -= cost;
+          resource!.verdaniteDrones++;
+          _showMessage(context, "Drone de Verdanite acheté !");
+        } else {
+          _showMessage(context, "Pas assez de Verdanite pour acheter ce drone.");
+        }
+        break;
+
+      case 'ignitium':
+        if (resource!.ignitium >= cost) {
+          resource!.ignitium -= cost;
+          resource!.ignitiumDrones++;
+          _showMessage(context, "Drone d'Ignitium acheté !");
+        } else {
+          _showMessage(context, "Pas assez d'Ignitium pour acheter ce drone.");
+        }
+        break;
+
+      default:
+        _showMessage(context, "Type de drone inconnu.");
     }
+    dbService.saveData(resource!); // Sauvegarde des données
   }
 
   void handleCommand(String input, BuildContext context) {

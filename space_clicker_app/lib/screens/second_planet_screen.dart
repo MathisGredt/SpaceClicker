@@ -56,16 +56,12 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     setState(() {
       resource = loaded;
     });
-    _startAutoCollect();
 
     gameService.init().then((_) {
-      gameService.startAutoCollect(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-
-      setState(() {}); // To display loaded resources
+      gameService.collectAllResources();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -77,9 +73,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
 
     setState(() {
       isClicked = true;
-      resource!.verdanite++; // ✅ Incrémenter la ressource Verdanite
-      resource!.totalCollected++;
-      dbService.saveData(resource!);
+      gameService.collectVerdanite();
 
       fallingWidgets.add(_createFallingWidget(
         "+1",
@@ -100,19 +94,6 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           fallingWidgets.removeAt(0);
         }
       });
-    });
-  }
-
-  void _startAutoCollect() {
-    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource != null && resource!.drones > 0) {
-        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
-        setState(() {
-          resource!.noctilium += collected;
-          resource!.totalCollected += collected;
-        });
-        dbService.saveData(resource!);
-      }
     });
   }
 
@@ -149,24 +130,6 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           isFading = false;
         });
       });
-    });
-  }
-
-  void _attemptBuyDrone() {
-    final success = gameService.buyDrone();
-    if (!success) {
-      _showMessage("Pas assez de Noctilium pour acheter un drone sur la planète 2");
-    }
-    setState(() {});
-  }
-
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  void _handleCommand(String cmd) {
-    setState(() {
-      gameService.handleCommand(cmd, context);
     });
   }
 
@@ -277,7 +240,11 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
             right: 20,
             child: RetroTerminalRight(
               history: history,
-              onCommand: _handleCommand,
+              onCommand: (cmd) {
+                setState(() {
+                  gameService.handleCommand(cmd, context);
+                });
+              },
             ),
           ),
 

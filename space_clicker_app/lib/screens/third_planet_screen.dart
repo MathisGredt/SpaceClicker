@@ -55,16 +55,12 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     setState(() {
       resource = loaded;
     });
-    _startAutoCollect();
 
     gameService.init().then((_) {
-      gameService.startAutoCollect(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
-
-      setState(() {}); // Pour afficher les ressources chargées
+      gameService.collectAllResources();
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -76,9 +72,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
     setState(() {
       isClicked = true;
-      resource!.ignitium++; // ✅ Incrémenter la ressource Ignitium
-      resource!.totalCollected++;
-      dbService.saveData(resource!);
+      gameService.collectIgnitium();
 
       fallingWidgets.add(_createFallingWidget(
         "+1",
@@ -102,19 +96,6 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     });
   }
 
-  void _startAutoCollect() {
-    autoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      if (resource != null && resource!.drones > 0) {
-        final collected = (resource!.drones * 2 * bonusService.bonusMultiplier).round();
-        setState(() {
-          resource!.noctilium += collected;
-          resource!.totalCollected += collected;
-        });
-        dbService.saveData(resource!);
-      }
-    });
-  }
-
   void _navigateToSecondPlanet() {
     setState(() {
       isFading = true;
@@ -130,32 +111,6 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
           isFading = false;
         });
       });
-    });
-  }
-
-  void _buyDrone() {
-    const cost = 50;
-    if (resource != null && resource!.noctilium >= cost) {
-      setState(() {
-        resource!.noctilium -= cost;
-        resource!.drones++;
-        history.add("Drone acheté sur la planète 3 !");
-      });
-      dbService.saveData(resource!);
-    } else {
-      _showMessage("Pas assez de Noctilium pour acheter un drone sur la planète 3");
-    }
-  }
-
-  void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
-  }
-
-  void _handleCommand(String cmd) {
-    setState(() {
-      gameService.handleCommand(cmd, context);
     });
   }
 
@@ -263,7 +218,11 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
             right: 20,
             child: RetroTerminalRight(
               history: history,
-              onCommand: _handleCommand,
+              onCommand: (cmd) {
+                setState(() {
+                  gameService.handleCommand(cmd, context);
+                });
+              },
             ),
           ),
 
