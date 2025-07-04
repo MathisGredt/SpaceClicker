@@ -8,7 +8,6 @@ class DatabaseService {
   DatabaseService._internal();
 
   Database? _db;
-
   static const String _tableName = 'resource_save';
 
   Future<void> initDb() async {
@@ -17,28 +16,27 @@ class DatabaseService {
 
     _db = await openDatabase(
       path,
-      version: 3, // Augmentez la version de la base de données
+      version: 2, // Increment the version number
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $_tableName (
             id INTEGER PRIMARY KEY,
-            noctilium INTEGER,
-            ferralyte INTEGER,
-            verdanite INTEGER DEFAULT 0, -- Ajout de la colonne Verdanite
-            ignitium INTEGER DEFAULT 0,  -- Ajout de la colonne Ignitium
-            drones INTEGER,
-            totalCollected INTEGER,
-            bonus REAL DEFAULT 1.0
+            drones INTEGER NOT NULL,
+            totalCollected INTEGER NOT NULL,
+            noctilium INTEGER NOT NULL,
+            ferralyte INTEGER NOT NULL,
+            verdanite INTEGER NOT NULL,
+            ignitium INTEGER NOT NULL,
+            amarenthite INTEGER NOT NULL, -- New column
+            crimsite INTEGER NOT NULL,    -- New column
+            bonus REAL NOT NULL
           )
         ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN bonus REAL DEFAULT 1.0');
-        }
-        if (oldVersion < 3) {
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN verdanite INTEGER DEFAULT 0');
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN ignitium INTEGER DEFAULT 0');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthite INTEGER NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN crimsite INTEGER NOT NULL DEFAULT 0');
         }
       },
     );
@@ -54,25 +52,13 @@ class DatabaseService {
     if (maps.isNotEmpty) {
       return Resource.fromMap(maps.first);
     } else {
-      await _db!.insert(_tableName, {
-        'id': 1,
-        'noctilium': 0,
-        'ferralyte': 0,
-        'verdanite': 0, // Initialisation par défaut
-        'ignitium': 0,  // Initialisation par défaut
-        'drones': 0,
-        'totalCollected': 0,
-        'bonus': 1.0,
-      });
-      return Resource(
-        noctilium: 0,
-        ferralyte: 0,
-        verdanite: 0,
-        ignitium: 0,
+      final defaultResource = Resource(
         drones: 0,
         totalCollected: 0,
         bonus: 1.0,
       );
+      await _db!.insert(_tableName, defaultResource.toMap());
+      return defaultResource;
     }
   }
 

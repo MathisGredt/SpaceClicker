@@ -3,8 +3,10 @@ class Resource {
   int totalCollected;
   int noctilium;
   int ferralyte;
-  int verdanite; // ✅ Ajout de la ressource Verdanite
-  int ignitium;  // ✅ Ajout de la ressource Ignitium
+  int verdanite;
+  int ignitium;
+  int amarenthite; // ✅ Ajout de la ressource Amarenthite
+  int crimsite;    // ✅ Ajout de la ressource Crimsite
   double bonus;
 
   Resource({
@@ -12,8 +14,10 @@ class Resource {
     required this.totalCollected,
     this.noctilium = 0,
     this.ferralyte = 0,
-    this.verdanite = 0, // ✅ Initialisation par défaut
-    this.ignitium = 0,  // ✅ Initialisation par défaut
+    this.verdanite = 0,
+    this.ignitium = 0,
+    this.amarenthite = 0, // ✅ Initialisation par défaut
+    this.crimsite = 0,    // ✅ Initialisation par défaut
     this.bonus = 1.0,
   });
 
@@ -23,8 +27,10 @@ class Resource {
       'totalCollected': totalCollected,
       'noctilium': noctilium,
       'ferralyte': ferralyte,
-      'verdanite': verdanite, // ✅ Ajout au mapping
-      'ignitium': ignitium,   // ✅ Ajout au mapping
+      'verdanite': verdanite,
+      'ignitium': ignitium,
+      'amarenthite': amarenthite, // ✅ Ajout au mapping
+      'crimsite': crimsite,       // ✅ Ajout au mapping
       'bonus': bonus,
     };
   }
@@ -35,8 +41,10 @@ class Resource {
       totalCollected: map['totalCollected'] as int,
       noctilium: map['noctilium'] as int? ?? 0,
       ferralyte: map['ferralyte'] as int? ?? 0,
-      verdanite: map['verdanite'] as int? ?? 0, // ✅ Lecture sécurisée
-      ignitium: map['ignitium'] as int? ?? 0,   // ✅ Lecture sécurisée
+      verdanite: map['verdanite'] as int? ?? 0,
+      ignitium: map['ignitium'] as int? ?? 0,
+      amarenthite: map['amarenthite'] as int? ?? 0, // ✅ Lecture sécurisée
+      crimsite: map['crimsite'] as int? ?? 0,       // ✅ Lecture sécurisée
       bonus: (map['bonus'] ?? 1.0).toDouble(),
     );
   }
