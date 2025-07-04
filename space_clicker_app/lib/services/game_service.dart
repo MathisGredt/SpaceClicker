@@ -14,14 +14,13 @@ Commandes disponibles :
   /store        -> Affiche la liste des objets achetables
   /clear        -> Vide le terminal
 Pour l'aide sur une commande : <commande> help (ex: /buy help)
-/buy <objet> [quantité]  pour acheter plusieurs
 ''';
 
 const String usageBuy = '''
-Utilisation: /buy <objet> [quantité]
-Exemple: /buy noctiliumdrone 5
+Utilisation: /buy <itemtype> <objet> [quantité]
+Exemple: /buy drone noctilium 5
 Pour l'aide sur un objet : /buy help
-Objets disponibles : noctiliumdrone, verdanitedrone, ignitiumdrone
+Objets disponibles : drone, drill
 ''';
 
 const String usageStore = '''
@@ -200,11 +199,11 @@ class GameService {
   /// Renvoie le coût actuel d'achat d'un drone pour un type donné
   int getCurrentDronePrice(String droneType, Resource r) {
     switch (droneType) {
-      case 'noctiliumdrone':
+      case 'noctilium':
         return 50 + 50 * r.noctiliumDrones;
-      case 'verdanitedrone':
+      case 'verdanite':
         return 50 + 50 * r.verdaniteDrones;
-      case 'ignitiumdrone':
+      case 'ignitium':
         return 50 + 50 * r.ignitiumDrones;
       default:
         return 999999; // Impossible
@@ -269,7 +268,7 @@ class GameService {
     int cost = getCurrentDronePrice(droneType, r);
 
     switch (droneType.toLowerCase()) {
-      case 'noctiliumdrone':
+      case 'noctilium':
         if (r.noctilium >= cost) {
           r.noctilium -= cost;
           r.noctiliumDrones++;
@@ -283,7 +282,7 @@ class GameService {
           history.add("Pas assez de Noctilium pour acheter ce drone (coût: $cost).");
         }
         break;
-      case 'verdanitedrone':
+      case 'verdanite':
         if (r.verdanite >= cost) {
           r.verdanite -= cost;
           r.verdaniteDrones++;
@@ -297,7 +296,7 @@ class GameService {
           history.add("Pas assez de Verdanite pour acheter ce drone (coût: $cost).");
         }
         break;
-      case 'ignitiumdrone':
+      case 'ignitium':
         if (r.ignitium >= cost) {
           r.ignitium -= cost;
           r.ignitiumDrones++;
@@ -360,10 +359,9 @@ class GameService {
     if (lower == '/store') {
       final r = resourceNotifier.value;
       history.add('Objets disponibles à l\'achat:');
-      history.add('- noctiliumdrone (${getCurrentDronePrice('noctiliumdrone', r!)} noctilium)');
-      history.add('- verdanitedrone (${getCurrentDronePrice('verdanitedrone', r)} verdanite)');
-      history.add('- ignitiumdrone (${getCurrentDronePrice('ignitiumdrone', r)} ignitium)');
-      history.add('Utilisez /buy <objet> [quantité]');
+      history.add('- drone (noctilium, verdanite, ignitium)');
+      history.add('- drill (ferralyte, amarenthite, crimsite)');
+      history.add('Utilisez /buy <itemtype> <objet> [quantité]');
       resourceNotifier.notifyListeners();
       return;
     }

@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             right: 0,
             child: Center(
               child: Text(
-                "Home Planet",
+                "Theralis",
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
