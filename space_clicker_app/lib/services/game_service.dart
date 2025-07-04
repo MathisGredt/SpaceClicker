@@ -60,6 +60,20 @@ class GameService {
     });
   }
 
+  void startFerralyteAutoCollect(VoidCallback onUpdate) {
+    Timer.periodic(Duration(seconds: 1), (_) {
+      final r = resourceNotifier.value;
+      if (r != null && r.ferralyteDrills > 0) {
+        final collected = (r.ferralyteDrills * 2 * bonusService.bonusMultiplier).round();
+        r.ferralyte += collected;
+        r.totalCollected += collected;
+        dbService.saveData(r);
+        resourceNotifier.notifyListeners();
+        onUpdate();
+      }
+    });
+  }
+
   void collectNoctilium() {
     final r = resourceNotifier.value;
     if (r == null) return;
@@ -76,6 +90,20 @@ class GameService {
       if (r != null && r.verdaniteDrones > 0) {
         final collected = (r.verdaniteDrones * 2 * bonusService.bonusMultiplier).round();
         r.verdanite += collected;
+        r.totalCollected += collected;
+        dbService.saveData(r);
+        resourceNotifier.notifyListeners();
+        onUpdate();
+      }
+    });
+  }
+
+  void startCrimsiteAutoCollect(VoidCallback onUpdate) {
+    Timer.periodic(Duration(seconds: 1), (_) {
+      final r = resourceNotifier.value;
+      if (r != null && r.crimsiteDrills > 0) {
+        final collected = (r.crimsiteDrills * 2 * bonusService.bonusMultiplier).round();
+        r.crimsite += collected;
         r.totalCollected += collected;
         dbService.saveData(r);
         resourceNotifier.notifyListeners();
@@ -108,6 +136,20 @@ class GameService {
     });
   }
 
+  void startAmarenthiteAutoCollect(VoidCallback onUpdate) {
+    Timer.periodic(Duration(seconds: 1), (_) {
+      final r = resourceNotifier.value;
+      if (r != null && r.amarenthiteDrills > 0) {
+        final collected = (r.amarenthiteDrills * 2 * bonusService.bonusMultiplier).round();
+        r.amarenthite += collected;
+        r.totalCollected += collected;
+        dbService.saveData(r);
+        resourceNotifier.notifyListeners();
+        onUpdate();
+      }
+    });
+  }
+
   void collectIgnitium() {
     final r = resourceNotifier.value;
     if (r == null) return;
@@ -119,6 +161,54 @@ class GameService {
 
   void _showMessage(BuildContext context, String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void attemptBuyDrill(String drillType, BuildContext context) {
+    const cost = 100;
+    final r = resourceNotifier.value;
+    if (r == null) return;
+
+    switch (drillType.toLowerCase()) {
+      case 'ferralyte':
+        if (r.noctilium >= cost) {
+          r.noctilium -= cost;
+          r.ferralyteDrills++;
+          _showMessage(context, "Forreuse de Ferralyte achetée !");
+          dbService.saveData(r);
+          resourceNotifier.notifyListeners();
+        } else {
+          _showMessage(context, "Pas assez de Noctilium !");
+        }
+        break;
+
+      case 'crimsite':
+        if (r.verdanite >= cost) {
+          r.verdanite -= cost;
+          r.crimsiteDrills++;
+          _showMessage(context, "Forreuse de Crimsite achetée !");
+          dbService.saveData(r);
+          resourceNotifier.notifyListeners();
+        } else {
+          _showMessage(context, "Pas assez de Verdanite !");
+        }
+        break;
+
+      case 'amarenthite':
+        if (r.ignitium >= cost) {
+          r.ignitium -= cost;
+          r.amarenthiteDrills++;
+          _showMessage(context, "Forreuse d'Amarenthite achetée !");
+          dbService.saveData(r);
+          startAmarenthiteAutoCollect(() {});
+          resourceNotifier.notifyListeners();
+        } else {
+          _showMessage(context, "Pas assez d'Ignitium !");
+        }
+        break;
+
+      default:
+        _showMessage(context, "Type de forreuse inconnu !");
+    }
   }
 
   /// Achat d'un drone, type: 'noctilium', 'verdanite', 'ignitium'
@@ -170,17 +260,26 @@ class GameService {
   }
 
   void handleCommand(String input, BuildContext context) {
-    // Ajout de la gestion de /buy <type>
     final trimmedInput = input.trim();
     if (trimmedInput.startsWith('/buy')) {
       final parts = trimmedInput.split(RegExp(r'\s+'));
-      if (parts.length == 2) {
-        final droneType = parts[1].toLowerCase();
-        history.add('Commande exécutée : $input');
-        attemptBuyDrone(droneType, context);
+      if (parts.length == 3) {
+        final type = parts[1].toLowerCase();
+        final resource = parts[2].toLowerCase();
+
+        if (type == 'drone' && ['noctilium', 'verdanite', 'ignitium'].contains(resource)) {
+          history.add('Commande exécutée : $input');
+          attemptBuyDrone(resource, context);
+        } else if (type == 'drill' && ['crimsite', 'amarenthite', 'ferralyte'].contains(resource)) {
+          history.add('Commande exécutée : $input');
+          attemptBuyDrill(resource, context);
+        } else {
+          history.add('Commande incorrecte : $input');
+          _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill> <minerai>");
+        }
       } else {
         history.add('Commande incorrecte : $input');
-        _showMessage(context, "Commande /buy invalide. Usage : /buy <noctilium|verdanite|ignitium>");
+        _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill> <minerai>");
       }
       return;
     }

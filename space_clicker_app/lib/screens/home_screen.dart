@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _initAndLoad() async {
     await dbService.initDb();
+    await dbService.insertInitialResourceIfNeeded(); // Ensure initial data is inserted
     await dbService.loadData();
 
     await gameService.init();

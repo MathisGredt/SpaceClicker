@@ -2,26 +2,32 @@ class Resource {
   int noctiliumDrones;
   int verdaniteDrones;
   int ignitiumDrones;
+  int amarenthiteDrills;
+  int crimsiteDrills;
+  int ferralyteDrills;
   int totalCollected;
   int noctilium;
   int ferralyte;
   int verdanite;
   int ignitium;
-  int amarenthite; // ✅ Ajout de la ressource Amarenthite
-  int crimsite;    // ✅ Ajout de la ressource Crimsite
+  int amarenthite;
+  int crimsite;
   double bonus;
 
   Resource({
     required this.noctiliumDrones,
     required this.verdaniteDrones,
     required this.ignitiumDrones,
+    required this.amarenthiteDrills,
+    required this.crimsiteDrills,
+    required this.ferralyteDrills,
     required this.totalCollected,
     this.noctilium = 0,
     this.ferralyte = 0,
     this.verdanite = 0,
     this.ignitium = 0,
-    this.amarenthite = 0, // ✅ Initialisation par défaut
-    this.crimsite = 0,    // ✅ Initialisation par défaut
+    this.amarenthite = 0,
+    this.crimsite = 0,
     this.bonus = 1.0,
   });
 
@@ -30,13 +36,16 @@ class Resource {
       'noctiliumDrones': noctiliumDrones,
       'verdaniteDrones': verdaniteDrones,
       'ignitiumDrones': ignitiumDrones,
+      'amarenthiteDrills': amarenthiteDrills,
+      'crimsiteDrills': crimsiteDrills,
+      'ferralyteDrills': ferralyteDrills,
       'totalCollected': totalCollected,
       'noctilium': noctilium,
       'ferralyte': ferralyte,
       'verdanite': verdanite,
       'ignitium': ignitium,
-      'amarenthite': amarenthite, // ✅ Ajout au mapping
-      'crimsite': crimsite,       // ✅ Ajout au mapping
+      'amarenthite': amarenthite,
+      'crimsite': crimsite,
       'bonus': bonus,
     };
   }
@@ -46,13 +55,16 @@ class Resource {
       noctiliumDrones: map['noctiliumDrones'] as int? ?? 0,
       verdaniteDrones: map['verdaniteDrones'] as int? ?? 0,
       ignitiumDrones: map['ignitiumDrones'] as int? ?? 0,
+      amarenthiteDrills: map['amarenthiteDrills'] as int? ?? 0,
+      crimsiteDrills: map['crimsiteDrills'] as int? ?? 0,
+      ferralyteDrills: map['ferralyteDrills'] as int? ?? 0,
       totalCollected: map['totalCollected'] as int,
       noctilium: map['noctilium'] as int? ?? 0,
       ferralyte: map['ferralyte'] as int? ?? 0,
       verdanite: map['verdanite'] as int? ?? 0,
       ignitium: map['ignitium'] as int? ?? 0,
-      amarenthite: map['amarenthite'] as int? ?? 0, // ✅ Lecture sécurisée
-      crimsite: map['crimsite'] as int? ?? 0,       // ✅ Lecture sécurisée
+      amarenthite: map['amarenthite'] as int? ?? 0,
+      crimsite: map['crimsite'] as int? ?? 0,
       bonus: (map['bonus'] ?? 1.0).toDouble(),
     );
   }
