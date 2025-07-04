@@ -98,21 +98,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _navigateToSecondPlanet() {
-    setState(() {
-      isFading = true;
-    });
+    const requiredNoctilium = 100; // Exemple de palier requis
+    if (resource != null && resource!.noctilium >= requiredNoctilium) {
+      setState(() {
+        isFading = true;
+      });
 
-    Future.delayed(Duration(seconds: 1), () {
-      videoService.disposeVideo();
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
-      ).then((_) {
-        setState(() {
-          isFading = false;
+      Future.delayed(Duration(seconds: 1), () {
+        videoService.disposeVideo();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SecondPlanetScreen()),
+        ).then((_) {
+          setState(() {
+            isFading = false;
+          });
         });
       });
-    });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vous avez besoin de $requiredNoctilium Noctilium pour accéder à la prochaine planète.")),
+      );
+    }
   }
 
   Widget _createFallingWidget(String text, String iconPath, Offset position) {

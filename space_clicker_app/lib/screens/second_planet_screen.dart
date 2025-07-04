@@ -116,21 +116,28 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   }
 
   void _navigateToThirdPlanet() {
-    setState(() {
-      isFading = true;
-    });
+    const requiredVerdanite = 200; // Exemple de palier requis
+    if (resource != null && resource!.verdanite >= requiredVerdanite) {
+      setState(() {
+        isFading = true;
+      });
 
-    Future.delayed(Duration(seconds: 1), () {
-      videoService.disposeVideo();
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ThirdPlanetScreen()),
-      ).then((_) {
-        setState(() {
-          isFading = false;
+      Future.delayed(Duration(seconds: 1), () {
+        videoService.disposeVideo();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ThirdPlanetScreen()),
+        ).then((_) {
+          setState(() {
+            isFading = false;
+          });
         });
       });
-    });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vous avez besoin de $requiredVerdanite Verdanite pour accéder à la prochaine planète.")),
+      );
+    }
   }
 
   Widget _createFallingWidget(String text, String iconPath, Offset position) {
