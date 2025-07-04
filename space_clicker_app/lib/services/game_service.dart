@@ -5,6 +5,38 @@ import 'database_service.dart';
 import 'bonus_service.dart';
 import '../screens/upgrade_screen.dart';
 
+// ==== COMMAND HELP CONSTANTS ====
+
+const String usageGeneral = '''
+Commandes disponibles :
+  /upgrade      -> Ouvre la page d'amélioration
+  /buy          -> Acheter un objet (drone, etc)
+  /store        -> Affiche la liste des objets achetables
+  /clear        -> Vide le terminal
+Pour l'aide sur une commande : <commande> help (ex: /buy help)
+/buy <objet> [quantité]  pour acheter plusieurs
+''';
+
+const String usageBuy = '''
+Utilisation: /buy <objet> [quantité]
+Exemple: /buy noctiliumdrone 5
+Pour l'aide sur un objet : /buy help
+Objets disponibles : noctiliumdrone, verdanitedrone, ignitiumdrone
+''';
+
+const String usageStore = '''
+Utilisation: /store
+Affiche la liste des objets achetables (pour l'instant: drones de ressources).
+Exemple: /store
+''';
+
+const String usageUpgrade = '''
+Utilisation: /upgrade
+Ouvre la page d'amélioration.
+''';
+
+// ==== GAME SERVICE ====
+
 class GameService {
   static final GameService _instance = GameService._internal();
 
@@ -28,6 +60,8 @@ class GameService {
   Future<void> init() async {
     await dbService.initDb();
     resourceNotifier.value = await dbService.loadData();
+    history.add('Aide générale:');
+    history.add(usageGeneral);
   }
 
   void dispose() {
@@ -121,82 +155,158 @@ class GameService {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  /// Achat d'un drone, type: 'noctilium', 'verdanite', 'ignitium'
+  /// Renvoie le coût actuel d'achat d'un drone pour un type donné
+  int getCurrentDronePrice(String droneType, Resource r) {
+    switch (droneType) {
+      case 'noctiliumdrone':
+        return 50 + 50 * r.noctiliumDrones;
+      case 'verdanitedrone':
+        return 50 + 50 * r.verdaniteDrones;
+      case 'ignitiumdrone':
+        return 50 + 50 * r.ignitiumDrones;
+      default:
+        return 999999; // Impossible
+    }
+  }
+
+  /// Achat d'un drone, type: 'noctiliumdrone', 'verdanitedrone', 'ignitiumdrone'
   void attemptBuyDrone(String droneType, BuildContext context) {
-    const cost = 50;
     final r = resourceNotifier.value;
     if (r == null) return;
 
+    int cost = getCurrentDronePrice(droneType, r);
+
     switch (droneType.toLowerCase()) {
-      case 'noctilium':
+      case 'noctiliumdrone':
         if (r.noctilium >= cost) {
           r.noctilium -= cost;
           r.noctiliumDrones++;
-          _showMessage(context, "Drone de Noctilium acheté !");
+          _showMessage(context, "Drone de Noctilium acheté pour $cost !");
+          history.add("Drone de Noctilium acheté pour $cost !");
           dbService.saveData(r);
           startNoctiliumAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
-          _showMessage(context, "Pas assez de Noctilium pour acheter ce drone.");
+          _showMessage(context, "Pas assez de Noctilium pour acheter ce drone (coût: $cost).");
+          history.add("Pas assez de Noctilium pour acheter ce drone (coût: $cost).");
         }
         break;
-      case 'verdanite':
+      case 'verdanitedrone':
         if (r.verdanite >= cost) {
           r.verdanite -= cost;
           r.verdaniteDrones++;
-          _showMessage(context, "Drone de Verdanite acheté !");
+          _showMessage(context, "Drone de Verdanite acheté pour $cost !");
+          history.add("Drone de Verdanite acheté pour $cost !");
           dbService.saveData(r);
           startVerdaniteAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
-          _showMessage(context, "Pas assez de Verdanite pour acheter ce drone.");
+          _showMessage(context, "Pas assez de Verdanite pour acheter ce drone (coût: $cost).");
+          history.add("Pas assez de Verdanite pour acheter ce drone (coût: $cost).");
         }
         break;
-      case 'ignitium':
+      case 'ignitiumdrone':
         if (r.ignitium >= cost) {
           r.ignitium -= cost;
           r.ignitiumDrones++;
-          _showMessage(context, "Drone d'Ignitium acheté !");
+          _showMessage(context, "Drone d'Ignitium acheté pour $cost !");
+          history.add("Drone d'Ignitium acheté pour $cost !");
           dbService.saveData(r);
           startIgnitiumAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
-          _showMessage(context, "Pas assez d'Ignitium pour acheter ce drone.");
+          _showMessage(context, "Pas assez d'Ignitium pour acheter ce drone (coût: $cost).");
+          history.add("Pas assez d'Ignitium pour acheter ce drone (coût: $cost).");
         }
         break;
       default:
         _showMessage(context, "Type de drone inconnu.");
+        history.add("Type de drone inconnu.");
     }
   }
 
   void handleCommand(String input, BuildContext context) {
-    // Ajout de la gestion de /buy <type>
     final trimmedInput = input.trim();
-    if (trimmedInput.startsWith('/buy')) {
+    final lower = trimmedInput.toLowerCase();
+
+    // Ajoute la commande tapée à l'historique, façon terminal
+    history.add("> $input");
+
+    // /clear — vide le terminal
+    if (lower == '/clear') {
+      history.clear();
+      resourceNotifier.notifyListeners();
+      return;
+    }
+
+    // Gestion aide globale
+    if (lower == '/help' || lower == 'help') {
+      history.add('Aide générale:');
+      history.add(usageGeneral);
+      resourceNotifier.notifyListeners();
+      return;
+    }
+
+    // /buy help ou /store help
+    if (lower.startsWith('/buy help')) {
+      history.add(usageBuy);
+      resourceNotifier.notifyListeners();
+      return;
+    }
+    if (lower.startsWith('/store help')) {
+      history.add(usageStore);
+      resourceNotifier.notifyListeners();
+      return;
+    }
+    if (lower.startsWith('/upgrade help')) {
+      history.add(usageUpgrade);
+      resourceNotifier.notifyListeners();
+      return;
+    }
+
+    // /store — affiche la boutique
+    if (lower == '/store') {
+      final r = resourceNotifier.value;
+      history.add('Objets disponibles à l\'achat:');
+      history.add('- noctiliumdrone (${getCurrentDronePrice('noctiliumdrone', r!)} noctilium)');
+      history.add('- verdanitedrone (${getCurrentDronePrice('verdanitedrone', r)} verdanite)');
+      history.add('- ignitiumdrone (${getCurrentDronePrice('ignitiumdrone', r)} ignitium)');
+      history.add('Utilisez /buy <objet> [quantité]');
+      resourceNotifier.notifyListeners();
+      return;
+    }
+
+    // /buy [objet] [quantité]
+    if (lower.startsWith('/buy')) {
       final parts = trimmedInput.split(RegExp(r'\s+'));
-      if (parts.length == 2) {
+      if (parts.length == 2 || parts.length == 3) {
         final droneType = parts[1].toLowerCase();
-        history.add('Commande exécutée : $input');
-        attemptBuyDrone(droneType, context);
+        final quantity = (parts.length == 3) ? int.tryParse(parts[2]) ?? 1 : 1;
+        for (int i = 0; i < quantity; i++) {
+          attemptBuyDrone(droneType, context);
+        }
+        history.add("Tentative d'achat de $quantity $droneType.");
+        resourceNotifier.notifyListeners();
       } else {
-        history.add('Commande incorrecte : $input');
-        _showMessage(context, "Commande /buy invalide. Usage : /buy <noctilium|verdanite|ignitium>");
+        history.add(usageBuy);
+        resourceNotifier.notifyListeners();
       }
       return;
     }
 
-    // Commandes classiques
-    switch (trimmedInput) {
-      case '/upgrade':
-        history.add('Commande exécutée : $input');
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => UpgradeScreen()),
-        );
-        break;
-      default:
-        history.add('Commande inconnue : $input');
+    // /upgrade — ouvre la page d'amélioration
+    if (lower == '/upgrade') {
+      history.add('Commande exécutée : $input');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => UpgradeScreen()),
+      );
+      resourceNotifier.notifyListeners();
+      return;
     }
+
+    history.add('Commande inconnue : $input');
+    resourceNotifier.notifyListeners();
   }
 
   List<String> getHistory() => List.unmodifiable(history);

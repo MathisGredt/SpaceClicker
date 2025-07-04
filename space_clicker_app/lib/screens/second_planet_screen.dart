@@ -236,10 +236,10 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
             top: 40,
             right: 20,
             child: RetroTerminalRight(
-              history: history,
+              history: GameService.instance.history,
               onCommand: (cmd) {
                 setState(() {
-                  gameService.handleCommand(cmd, context);
+                  GameService.instance.handleCommand(cmd, context);
                 });
               },
             ),
@@ -265,7 +265,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
 
           Positioned(
             left: 20,
-            top: MediaQuery.of(context).size.height / 2 - 150 + 150,
+            bottom: 20,
             child: IconButton(
               icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
               onPressed: _navigateToHomeScreen,
@@ -273,7 +273,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           ),
           Positioned(
             right: 20,
-            top: MediaQuery.of(context).size.height / 2 - 150 + 150,
+            bottom: 20,
             child: IconButton(
               icon: Icon(Icons.arrow_forward, size: 40, color: Colors.white),
               onPressed: _navigateToThirdPlanet,

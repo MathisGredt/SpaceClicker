@@ -205,10 +205,10 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
             top: 40,
             right: 20,
             child: RetroTerminalRight(
-              history: history,
+              history: GameService.instance.history,
               onCommand: (cmd) {
                 setState(() {
-                  gameService.handleCommand(cmd, context);
+                  GameService.instance.handleCommand(cmd, context);
                 });
               },
             ),
@@ -234,7 +234,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
           Positioned(
             left: 20,
-            top: MediaQuery.of(context).size.height / 2 - 150 + 150,
+            bottom: 20,
             child: IconButton(
               icon: Icon(Icons.arrow_back, size: 40, color: Colors.white),
               onPressed: _navigateToSecondPlanet,

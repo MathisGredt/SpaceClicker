@@ -23,32 +23,37 @@ class RetroTerminalLeft extends StatelessWidget {
             style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
           ),
           SizedBox(height: 10),
+          _resourceRow("Noctilium", resource?.noctilium ?? 0),
+          _resourceRow("Verdanite", resource?.verdanite ?? 0),
+          _resourceRow("Ignitium", resource?.ignitium ?? 0),
+          _resourceRow("Ferralyte", resource?.ferralyte ?? 0),
+          _resourceRow("Amarenthite", resource?.amarenthite ?? 0),
+          _resourceRow("Crimsite", resource?.crimsite ?? 0),
+          SizedBox(height: 16),
           Text(
-            "Noctilium: ${resource?.noctilium ?? 0}",
+            "=== DRONES ===",
             style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
           ),
-          Text(
-            "Ferralyte: ${resource?.ferralyte ?? 0}",
-            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
-          ),
-          Text(
-            "Verdanite: ${resource?.verdanite ?? 0}",
-            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
-          ),
-          Text(
-            "Ignitium: ${resource?.ignitium ?? 0}",
-            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
-          ),
-          Text(
-            "Amarenthite: ${resource?.amarenthite ?? 0}",
-            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
-          ),
-          Text(
-            "Crimsite: ${resource?.crimsite ?? 0}",
-            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
-          ),
+          SizedBox(height: 8),
+          _droneRow("Noctilium", resource?.noctiliumDrones ?? 0),
+          _droneRow("Verdanite", resource?.verdaniteDrones ?? 0),
+          _droneRow("Ignitium", resource?.ignitiumDrones ?? 0),
         ],
       ),
+    );
+  }
+
+  Widget _resourceRow(String name, int value) {
+    return Text(
+      "$name: $value",
+      style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
+    );
+  }
+
+  Widget _droneRow(String name, int drones) {
+    return Text(
+      "$name drones: $drones",
+      style: TextStyle(color: Colors.yellowAccent, fontFamily: 'Courier', fontSize: 13),
     );
   }
 }
