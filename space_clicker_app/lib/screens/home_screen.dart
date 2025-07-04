@@ -60,6 +60,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     gameService.startNoctiliumAutoCollect(() => setState(() {}));
     gameService.startVerdaniteAutoCollect(() => setState(() {}));
     gameService.startIgnitiumAutoCollect(() => setState(() {}));
+    gameService.startFerralyteDrillAutoCollect(() => setState(() {}));
+    gameService.startCrimsiteDrillAutoCollect(() => setState(() {}));
+    gameService.startAmarenthiteDrillAutoCollect(() => setState(() {}));
 
     if (mounted) setState(() {});
   }

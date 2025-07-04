@@ -7,11 +7,8 @@ import '../screens/upgrade_screen.dart';
 
 class GameService {
   static final GameService _instance = GameService._internal();
-
   factory GameService() => _instance;
-
   GameService._internal();
-
   static GameService get instance => _instance;
 
   final DatabaseService dbService = DatabaseService();
@@ -24,6 +21,9 @@ class GameService {
   Timer? noctiliumAutoCollectTimer;
   Timer? verdaniteAutoCollectTimer;
   Timer? ignitiumAutoCollectTimer;
+  Timer? ferralyteDrillTimer;
+  Timer? crimsiteDrillTimer;
+  Timer? amarenthiteDrillTimer;
 
   Future<void> init() async {
     await dbService.initDb();
@@ -45,6 +45,12 @@ class GameService {
     collectIgnitium();
   }
 
+  void stopAllDrillAutoCollect() {
+    ferralyteDrillTimer?.cancel();
+    crimsiteDrillTimer?.cancel();
+    amarenthiteDrillTimer?.cancel();
+  }
+
   void startNoctiliumAutoCollect(VoidCallback onUpdate) {
     noctiliumAutoCollectTimer?.cancel();
     noctiliumAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
@@ -60,15 +66,13 @@ class GameService {
     });
   }
 
-  void startFerralyteAutoCollect(VoidCallback onUpdate) {
-    Timer.periodic(Duration(seconds: 1), (_) {
-      final r = resourceNotifier.value;
-      if (r != null && r.ferralyteDrills > 0) {
-        final collected = (r.ferralyteDrills * 2 * bonusService.bonusMultiplier).round();
-        r.ferralyte += collected;
-        r.totalCollected += collected;
-        dbService.saveData(r);
-        resourceNotifier.notifyListeners();
+  void startFerralyteDrillAutoCollect(VoidCallback onUpdate) {
+    ferralyteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null) {
+        resource.ferralyte += resource.ferralyteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners(); // Notifie les changements
         onUpdate();
       }
     });
@@ -98,15 +102,13 @@ class GameService {
     });
   }
 
-  void startCrimsiteAutoCollect(VoidCallback onUpdate) {
-    Timer.periodic(Duration(seconds: 1), (_) {
-      final r = resourceNotifier.value;
-      if (r != null && r.crimsiteDrills > 0) {
-        final collected = (r.crimsiteDrills * 2 * bonusService.bonusMultiplier).round();
-        r.crimsite += collected;
-        r.totalCollected += collected;
-        dbService.saveData(r);
-        resourceNotifier.notifyListeners();
+  void startCrimsiteDrillAutoCollect(VoidCallback onUpdate) {
+    crimsiteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null) {
+        resource.crimsite += resource.crimsiteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners(); // Notifie les changements
         onUpdate();
       }
     });
@@ -136,15 +138,13 @@ class GameService {
     });
   }
 
-  void startAmarenthiteAutoCollect(VoidCallback onUpdate) {
-    Timer.periodic(Duration(seconds: 1), (_) {
-      final r = resourceNotifier.value;
-      if (r != null && r.amarenthiteDrills > 0) {
-        final collected = (r.amarenthiteDrills * 2 * bonusService.bonusMultiplier).round();
-        r.amarenthite += collected;
-        r.totalCollected += collected;
-        dbService.saveData(r);
-        resourceNotifier.notifyListeners();
+  void startAmarenthiteDrillAutoCollect(VoidCallback onUpdate) {
+    amarenthiteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null) {
+        resource.amarenthite += resource.amarenthiteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners(); // Notifie les changements
         onUpdate();
       }
     });
@@ -175,6 +175,7 @@ class GameService {
           r.ferralyteDrills++;
           _showMessage(context, "Forreuse de Ferralyte achetée !");
           dbService.saveData(r);
+          startFerralyteDrillAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
           _showMessage(context, "Pas assez de Noctilium !");
@@ -187,6 +188,7 @@ class GameService {
           r.crimsiteDrills++;
           _showMessage(context, "Forreuse de Crimsite achetée !");
           dbService.saveData(r);
+          startCrimsiteDrillAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
           _showMessage(context, "Pas assez de Verdanite !");
@@ -199,7 +201,7 @@ class GameService {
           r.amarenthiteDrills++;
           _showMessage(context, "Forreuse d'Amarenthite achetée !");
           dbService.saveData(r);
-          startAmarenthiteAutoCollect(() {});
+          startAmarenthiteDrillAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
           _showMessage(context, "Pas assez d'Ignitium !");
