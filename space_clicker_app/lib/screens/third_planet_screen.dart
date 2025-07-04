@@ -62,6 +62,9 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
       isClicked = true;
       gameService.collectIgnitium();
 
+      // Jouer le son au clic
+      AudioService().playClickSound('assets/sounds/break.mp3');
+
       fallingWidgets.add(_createFallingWidget(
         "+1",
         'assets/images/ignitium.png',

@@ -38,6 +38,16 @@ class RetroTerminalLeft extends StatelessWidget {
           _droneRow("Noctilium", resource?.noctiliumDrones ?? 0),
           _droneRow("Verdanite", resource?.verdaniteDrones ?? 0),
           _droneRow("Ignitium", resource?.ignitiumDrones ?? 0),
+          SizedBox(height: 20),
+          Text(
+            "=== DRILLS ===",
+            style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
+          ),
+          SizedBox(height: 8),
+          _drillRow("Ferralyte Drills", resource?.ferralyteDrills ?? 0),
+          _drillRow("Amarenthite Drills", resource?.amarenthiteDrills ?? 0),
+          _drillRow("Crimsite Drills", resource?.crimsiteDrills ?? 0),
+
         ],
       ),
     );
@@ -53,6 +63,13 @@ class RetroTerminalLeft extends StatelessWidget {
   Widget _droneRow(String name, int drones) {
     return Text(
       "$name drones: $drones",
+      style: TextStyle(color: Colors.yellowAccent, fontFamily: 'Courier', fontSize: 13),
+    );
+  }
+
+  Widget _drillRow(String name, int drills) {
+    return Text(
+      "$name: $drills",
       style: TextStyle(color: Colors.yellowAccent, fontFamily: 'Courier', fontSize: 13),
     );
   }

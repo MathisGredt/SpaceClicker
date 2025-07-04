@@ -5,7 +5,8 @@ class AudioService {
   static final AudioService _instance = AudioService._internal();
   factory AudioService() => _instance;
 
-  late final AudioPlayer _player;
+  late final AudioPlayer _musicPlayer;
+  late final AudioPlayer _clickPlayer; // Instance dédiée aux sons de clic
   final List<String> _tracks = [
     'assets/sounds/moonlit_whispers.mp3',
     'assets/sounds/starlit_horizons.mp3',
@@ -17,19 +18,16 @@ class AudioService {
   final Random _random = Random();
 
   AudioService._internal() {
-    _player = AudioPlayer();
+    _musicPlayer = AudioPlayer();
+    _clickPlayer = AudioPlayer(); // Initialisation de l'instance pour les clics
     _init();
   }
 
   Future<void> _init() async {
-    _player.playerStateStream.listen((state) {
+    _musicPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         _playRandomTrack();
       }
-    });
-
-    _player.playbackEventStream.listen((event) {}, onError: (Object e, StackTrace stackTrace) {
-      print('🛑 Playback error: $e');
     });
 
     await _playRandomTrack();
@@ -45,17 +43,27 @@ class AudioService {
     final track = _tracks[_currentTrackIndex!];
 
     try {
-      await _player.setAsset(track);
-      await _player.setVolume(0.1);
-      await _player.play();
+      await _musicPlayer.setAsset(track);
+      await _musicPlayer.setVolume(0.1);
+      await _musicPlayer.play();
     } catch (e) {
       print('❌ Error playing track: $e');
     }
   }
 
-  void pause() => _player.pause();
-  void resume() => _player.play();
-  void stop() => _player.stop();
+  Future<void> playClickSound(String soundPath) async {
+    try {
+      await _clickPlayer.setAsset(soundPath);
+      await _clickPlayer.setVolume(0.2);
+      await _clickPlayer.play();
+    } catch (e) {
+      print('❌ Error playing click sound: $e');
+    }
+  }
 
-  bool get isPlaying => _player.playing;
+  void pauseMusic() => _musicPlayer.pause();
+  void resumeMusic() => _musicPlayer.play();
+  void stopMusic() => _musicPlayer.stop();
+
+  bool get isMusicPlaying => _musicPlayer.playing;
 }

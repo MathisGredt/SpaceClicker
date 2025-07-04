@@ -54,6 +54,7 @@ flutter:
     - assets/sounds/starlit_horizons.mp3
     - assets/sounds/whisper_of_the_stars.mp3
     - assets/sounds/whispers_in_the_wind.mp3
+    - assets/sounds/break.mp3
     - assets/videos/background.mp4
 
   # Ajoute ici si tu as des polices

@@ -64,6 +64,9 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
       isClicked = true;
       gameService.collectVerdanite();
 
+      // Jouer le son au clic
+      AudioService().playClickSound('assets/sounds/break.mp3');
+
       fallingWidgets.add(_createFallingWidget(
         "+1",
         'assets/images/verdanite.png',

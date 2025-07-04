@@ -77,6 +77,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       isClicked = true;
       gameService.collectNoctilium();
 
+      // Jouer le son au clic
+      AudioService().playClickSound('assets/sounds/break.mp3');
+
       fallingWidgets.add(_createFallingWidget(
         "+1",
         'assets/images/noctilium.png',
