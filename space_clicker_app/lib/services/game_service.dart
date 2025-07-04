@@ -39,11 +39,8 @@ Ouvre la page d'amélioration.
 
 class GameService {
   static final GameService _instance = GameService._internal();
-
   factory GameService() => _instance;
-
   GameService._internal();
-
   static GameService get instance => _instance;
 
   final DatabaseService dbService = DatabaseService();
@@ -56,6 +53,9 @@ class GameService {
   Timer? noctiliumAutoCollectTimer;
   Timer? verdaniteAutoCollectTimer;
   Timer? ignitiumAutoCollectTimer;
+  Timer? ferralyteDrillTimer;
+  Timer? crimsiteDrillTimer;
+  Timer? amarenthiteDrillTimer;
 
   Future<void> init() async {
     await dbService.initDb();
@@ -79,6 +79,12 @@ class GameService {
     collectIgnitium();
   }
 
+  void stopAllDrillAutoCollect() {
+    ferralyteDrillTimer?.cancel();
+    crimsiteDrillTimer?.cancel();
+    amarenthiteDrillTimer?.cancel();
+  }
+
   void startNoctiliumAutoCollect(VoidCallback onUpdate) {
     noctiliumAutoCollectTimer?.cancel();
     noctiliumAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
@@ -89,6 +95,18 @@ class GameService {
         r.totalCollected += collected;
         dbService.saveData(r);
         resourceNotifier.notifyListeners();
+        onUpdate();
+      }
+    });
+  }
+
+  void startFerralyteDrillAutoCollect(VoidCallback onUpdate) {
+    ferralyteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null) {
+        resource.ferralyte += resource.ferralyteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners(); // Notifie les changements
         onUpdate();
       }
     });
@@ -118,6 +136,18 @@ class GameService {
     });
   }
 
+  void startCrimsiteDrillAutoCollect(VoidCallback onUpdate) {
+    crimsiteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null) {
+        resource.crimsite += resource.crimsiteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners(); // Notifie les changements
+        onUpdate();
+      }
+    });
+  }
+
   void collectVerdanite() {
     final r = resourceNotifier.value;
     if (r == null) return;
@@ -137,6 +167,18 @@ class GameService {
         r.totalCollected += collected;
         dbService.saveData(r);
         resourceNotifier.notifyListeners();
+        onUpdate();
+      }
+    });
+  }
+
+  void startAmarenthiteDrillAutoCollect(VoidCallback onUpdate) {
+    amarenthiteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null) {
+        resource.amarenthite += resource.amarenthiteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners(); // Notifie les changements
         onUpdate();
       }
     });
@@ -169,7 +211,57 @@ class GameService {
     }
   }
 
-  /// Achat d'un drone, type: 'noctiliumdrone', 'verdanitedrone', 'ignitiumdrone'
+  void attemptBuyDrill(String drillType, BuildContext context) {
+    const cost = 100;
+    final r = resourceNotifier.value;
+    if (r == null) return;
+
+    switch (drillType.toLowerCase()) {
+      case 'ferralyte':
+        if (r.noctilium >= cost) {
+          r.noctilium -= cost;
+          r.ferralyteDrills++;
+          _showMessage(context, "Forreuse de Ferralyte achetée !");
+          dbService.saveData(r);
+          startFerralyteDrillAutoCollect(() {});
+          resourceNotifier.notifyListeners();
+        } else {
+          _showMessage(context, "Pas assez de Noctilium !");
+        }
+        break;
+
+      case 'crimsite':
+        if (r.verdanite >= cost) {
+          r.verdanite -= cost;
+          r.crimsiteDrills++;
+          _showMessage(context, "Forreuse de Crimsite achetée !");
+          dbService.saveData(r);
+          startCrimsiteDrillAutoCollect(() {});
+          resourceNotifier.notifyListeners();
+        } else {
+          _showMessage(context, "Pas assez de Verdanite !");
+        }
+        break;
+
+      case 'amarenthite':
+        if (r.ignitium >= cost) {
+          r.ignitium -= cost;
+          r.amarenthiteDrills++;
+          _showMessage(context, "Forreuse d'Amarenthite achetée !");
+          dbService.saveData(r);
+          startAmarenthiteDrillAutoCollect(() {});
+          resourceNotifier.notifyListeners();
+        } else {
+          _showMessage(context, "Pas assez d'Ignitium !");
+        }
+        break;
+
+      default:
+        _showMessage(context, "Type de forreuse inconnu !");
+    }
+  }
+
+  /// Achat d'un drone, type: 'noctilium', 'verdanite', 'ignitium'
   void attemptBuyDrone(String droneType, BuildContext context) {
     final r = resourceNotifier.value;
     if (r == null) return;
@@ -279,17 +371,23 @@ class GameService {
     // /buy [objet] [quantité]
     if (lower.startsWith('/buy')) {
       final parts = trimmedInput.split(RegExp(r'\s+'));
-      if (parts.length == 2 || parts.length == 3) {
-        final droneType = parts[1].toLowerCase();
-        final quantity = (parts.length == 3) ? int.tryParse(parts[2]) ?? 1 : 1;
-        for (int i = 0; i < quantity; i++) {
-          attemptBuyDrone(droneType, context);
+      if (parts.length == 3) {
+        final type = parts[1].toLowerCase();
+        final resource = parts[2].toLowerCase();
+
+        if (type == 'drone' && ['noctilium', 'verdanite', 'ignitium'].contains(resource)) {
+          history.add('Commande exécutée : $input');
+          attemptBuyDrone(resource, context);
+        } else if (type == 'drill' && ['crimsite', 'amarenthite', 'ferralyte'].contains(resource)) {
+          history.add('Commande exécutée : $input');
+          attemptBuyDrill(resource, context);
+        } else {
+          history.add('Commande incorrecte : $input');
+          _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill> <minerai>");
         }
-        history.add("Tentative d'achat de $quantity $droneType.");
-        resourceNotifier.notifyListeners();
       } else {
-        history.add(usageBuy);
-        resourceNotifier.notifyListeners();
+        history.add('Commande incorrecte : $input');
+        _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill> <minerai>");
       }
       return;
     }

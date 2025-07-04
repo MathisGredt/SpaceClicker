@@ -14,7 +14,7 @@ class DatabaseService {
     final path = join(await getDatabasesPath(), 'resource.db');
     _db = await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE $_tableName (
@@ -22,6 +22,9 @@ class DatabaseService {
           noctiliumDrones INTEGER NOT NULL DEFAULT 0,
           verdaniteDrones INTEGER NOT NULL DEFAULT 0,
           ignitiumDrones INTEGER NOT NULL DEFAULT 0,
+          amarenthiteDrills INTEGER NOT NULL DEFAULT 0,
+          crimsiteDrills INTEGER NOT NULL DEFAULT 0,
+          ferralyteDrills INTEGER NOT NULL DEFAULT 0,
           totalCollected INTEGER NOT NULL,
           noctilium INTEGER NOT NULL,
           ferralyte INTEGER NOT NULL,
@@ -34,19 +37,16 @@ class DatabaseService {
       ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
+        if (oldVersion < 3) {
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthiteDrills INTEGER NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN crimsiteDrills INTEGER NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN ferralyteDrills INTEGER NOT NULL DEFAULT 0');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthite INTEGER NOT NULL DEFAULT 0');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN crimsite INTEGER NOT NULL DEFAULT 0');
-        }
-        if (oldVersion < 3) {
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN verdaniteDrones INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN ignitiumDrones INTEGER NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN ferralyte INTEGER NOT NULL DEFAULT 0');
         }
       },
     );
-
-    // ✅ Ajout ici
-    await insertInitialResourceIfNeeded();
   }
 
 
@@ -60,6 +60,9 @@ class DatabaseService {
         noctiliumDrones: 0,
         verdaniteDrones: 0,
         ignitiumDrones: 0,
+        amarenthiteDrills: 0,
+        crimsiteDrills: 0,
+        ferralyteDrills: 0,
         totalCollected: 0,
         noctilium: 0,
         ferralyte: 0,

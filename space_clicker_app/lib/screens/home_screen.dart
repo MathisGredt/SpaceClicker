@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _initAndLoad() async {
     await dbService.initDb();
+    await dbService.insertInitialResourceIfNeeded(); // Ensure initial data is inserted
     await dbService.loadData();
 
     await gameService.init();
@@ -59,6 +60,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     gameService.startNoctiliumAutoCollect(() => setState(() {}));
     gameService.startVerdaniteAutoCollect(() => setState(() {}));
     gameService.startIgnitiumAutoCollect(() => setState(() {}));
+    gameService.startFerralyteDrillAutoCollect(() => setState(() {}));
+    gameService.startCrimsiteDrillAutoCollect(() => setState(() {}));
+    gameService.startAmarenthiteDrillAutoCollect(() => setState(() {}));
 
     if (mounted) setState(() {});
   }
