@@ -29,9 +29,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   bool fadeOut = true; // New state for fade-out
   late DatabaseService dbService;
   late BonusService bonusService;
-  Resource? resource;
   List<String> history = [];
-  Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
 
   @override
@@ -44,28 +42,19 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
 
     // Trigger fade-out animation on screen load
     Future.delayed(Duration(seconds: 1), () {
-      setState(() {
-        fadeOut = false;
-      });
+      if (mounted) setState(() => fadeOut = false);
     });
   }
 
   Future<void> _initAndLoad() async {
+    // Pas besoin de recharger ou init GameService ici, il est singleton et déjà lancé
     await dbService.initDb();
-    final loaded = await dbService.loadData();
-    setState(() {
-      resource = loaded;
-    });
-
-    gameService.init().then((_) {
-      gameService.collectAllResources();
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    await dbService.loadData();
+    if (mounted) setState(() {});
   }
 
   void _collectVerdanite(TapDownDetails details) {
+    final resource = gameService.resourceNotifier.value;
     if (resource == null) return;
 
     RenderBox box = context.findRenderObject() as RenderBox;
@@ -83,13 +72,11 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     });
 
     Future.delayed(Duration(milliseconds: 200), () {
-      setState(() {
-        isClicked = false;
-      });
+      if (mounted) setState(() => isClicked = false);
     });
 
     Future.delayed(Duration(seconds: 2), () {
-      setState(() {
+      if (mounted) setState(() {
         if (fallingWidgets.isNotEmpty) {
           fallingWidgets.removeAt(0);
         }
@@ -116,8 +103,9 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   }
 
   void _navigateToThirdPlanet() {
-    const requiredVerdanite = 200; // Exemple de palier requis
-    if (resource != null && resource!.verdanite >= requiredVerdanite) {
+    const requiredVerdanite = 200;
+    final resource = gameService.resourceNotifier.value;
+    if (resource != null && resource.verdanite >= requiredVerdanite) {
       setState(() {
         isFading = true;
       });
@@ -201,7 +189,6 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
 
   @override
   void dispose() {
-    // Ne pas disposer gameService ici pour garder son état et timers actifs
     videoService.disposeVideo();
     super.dispose();
   }
@@ -239,7 +226,10 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           Positioned(
             top: 40,
             left: 20,
-            child: RetroTerminalLeft(resource: resource),
+            child: ValueListenableBuilder<Resource?>(
+              valueListenable: gameService.resourceNotifier,
+              builder: (context, resource, child) => RetroTerminalLeft(resource: resource),
+            ),
           ),
 
           Positioned(

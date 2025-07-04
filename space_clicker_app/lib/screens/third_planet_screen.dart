@@ -25,12 +25,10 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
   bool isClicked = false;
   bool isFading = false;
-  bool fadeOut = true; // New state for fade-out
+  bool fadeOut = true;
   late DatabaseService dbService;
   late BonusService bonusService;
-  Resource? resource;
   List<String> history = [];
-  Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
 
   @override
@@ -41,30 +39,20 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     bonusService = BonusService();
     _initAndLoad();
 
-    // Trigger fade-out animation on screen load
     Future.delayed(Duration(seconds: 1), () {
-      setState(() {
-        fadeOut = false;
-      });
+      if (mounted) setState(() => fadeOut = false);
     });
   }
 
   Future<void> _initAndLoad() async {
+    // Pas besoin de recharger ou init GameService ici, il est singleton et déjà lancé
     await dbService.initDb();
-    final loaded = await dbService.loadData();
-    setState(() {
-      resource = loaded;
-    });
-
-    gameService.init().then((_) {
-      gameService.collectAllResources();
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    await dbService.loadData();
+    if (mounted) setState(() {});
   }
 
   void _collectIgnitium(TapDownDetails details) {
+    final resource = gameService.resourceNotifier.value;
     if (resource == null) return;
 
     RenderBox box = context.findRenderObject() as RenderBox;
@@ -82,13 +70,11 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     });
 
     Future.delayed(Duration(milliseconds: 200), () {
-      setState(() {
-        isClicked = false;
-      });
+      if (mounted) setState(() => isClicked = false);
     });
 
     Future.delayed(Duration(seconds: 2), () {
-      setState(() {
+      if (mounted) setState(() {
         if (fallingWidgets.isNotEmpty) {
           fallingWidgets.removeAt(0);
         }
@@ -172,7 +158,6 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
   @override
   void dispose() {
-    // Ne pas disposer gameService ici pour garder son état et timers actifs
     videoService.disposeVideo();
     super.dispose();
   }
@@ -210,7 +195,10 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
           Positioned(
             top: 40,
             left: 20,
-            child: RetroTerminalLeft(resource: resource),
+            child: ValueListenableBuilder<Resource?>(
+              valueListenable: gameService.resourceNotifier,
+              builder: (context, resource, child) => RetroTerminalLeft(resource: resource),
+            ),
           ),
 
           Positioned(

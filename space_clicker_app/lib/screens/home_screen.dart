@@ -26,10 +26,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   bool isClicked = false;
   bool isFading = false;
-  bool fadeOut = true; // New state for fade-out
+  bool fadeOut = true;
   late DatabaseService dbService;
   late BonusService bonusService;
-  Resource? resource;
   List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
@@ -42,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     bonusService = BonusService();
     _initAndLoad();
 
-    // Trigger fade-out animation on screen load
+    // Fade-out animation au chargement
     Future.delayed(Duration(milliseconds: 500), () {
       setState(() {
         fadeOut = false;
@@ -52,21 +51,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> _initAndLoad() async {
     await dbService.initDb();
-    final loaded = await dbService.loadData();
-    setState(() {
-      resource = loaded;
-    });
+    await dbService.loadData();
 
-    gameService.init().then((_) {
-      gameService.collectAllResources();
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    await gameService.init();
+    gameService.collectAllResources();
+    // Démarrer l’auto-collect pour chaque ressource
+    gameService.startNoctiliumAutoCollect(() => setState(() {}));
+    gameService.startVerdaniteAutoCollect(() => setState(() {}));
+    gameService.startIgnitiumAutoCollect(() => setState(() {}));
+
+    if (mounted) setState(() {});
   }
 
   void _collectNoctilium(TapDownDetails details) {
-    if (resource == null) return;
+    if (gameService.resourceNotifier.value == null) return;
 
     RenderBox box = context.findRenderObject() as RenderBox;
     Offset localPosition = box.globalToLocal(details.globalPosition);
@@ -83,13 +81,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     Future.delayed(Duration(milliseconds: 200), () {
-      setState(() {
-        isClicked = false;
-      });
+      if (mounted) setState(() => isClicked = false);
     });
 
     Future.delayed(Duration(seconds: 2), () {
-      setState(() {
+      if (mounted) setState(() {
         if (fallingWidgets.isNotEmpty) {
           fallingWidgets.removeAt(0);
         }
@@ -98,8 +94,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _navigateToSecondPlanet() {
-    const requiredNoctilium = 100; // Exemple de palier requis
-    if (resource != null && resource!.noctilium >= requiredNoctilium) {
+    const requiredNoctilium = 100;
+    final resource = gameService.resourceNotifier.value;
+    if (resource != null && resource.noctilium >= requiredNoctilium) {
       setState(() {
         isFading = true;
       });
@@ -183,7 +180,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    // Ne pas disposer gameService ici pour garder son état et timers actifs
     videoService.disposeVideo();
     super.dispose();
   }
@@ -221,7 +217,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Positioned(
             top: 40,
             left: 20,
-            child: RetroTerminalLeft(resource: resource),
+            child: ValueListenableBuilder<Resource?>(
+              valueListenable: gameService.resourceNotifier,
+              builder: (context, resource, child) => RetroTerminalLeft(resource: resource),
+            ),
           ),
 
           Positioned(
