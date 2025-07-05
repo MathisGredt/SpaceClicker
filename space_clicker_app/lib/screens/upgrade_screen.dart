@@ -11,7 +11,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drone_noctilium.png',
       cost: 400,
       onApply: () {
-        GameService.instance.upgradeService.reduceCollectionTime('noctilium');
+        GameService.instance.upgradeService.reduceDroneCollectionTime('noctilium');
       },
     ),
     Upgrade(
@@ -20,7 +20,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drone_verdanite.png',
       cost: 400,
       onApply: () {
-        GameService.instance.upgradeService.reduceCollectionTime('verdanite');
+        GameService.instance.upgradeService.reduceDroneCollectionTime('verdanite');
       },
     ),
     Upgrade(
@@ -29,7 +29,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drone_ignitium.png',
       cost: 400,
       onApply: () {
-        GameService.instance.upgradeService.reduceCollectionTime('ignitium');
+        GameService.instance.upgradeService.reduceDroneCollectionTime('ignitium');
       },
     ),
     Upgrade(
