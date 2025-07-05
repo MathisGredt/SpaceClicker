@@ -99,7 +99,7 @@ class GameService {
 
   void startFerralyteDrillAutoCollect(VoidCallback onUpdate) {
     ferralyteDrillTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.ferralyteDrillInterval).round());
+    final interval = Duration(seconds: upgradeService.ferralyteDrillInterval);
     ferralyteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {
@@ -122,7 +122,7 @@ class GameService {
 
   void startVerdaniteAutoCollect(VoidCallback onUpdate) {
     verdaniteDroneTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.verdaniteDroneInterval).round());
+    final interval = Duration(seconds: upgradeService.verdaniteDroneInterval);
     verdaniteDroneTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null && resource.verdaniteDrones > 0) {
@@ -135,7 +135,7 @@ class GameService {
 
   void startCrimsiteDrillAutoCollect(VoidCallback onUpdate) {
     crimsiteDrillTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.crimsiteDrillInterval).round());
+    final interval = Duration(seconds: upgradeService.crimsiteDrillInterval);
     crimsiteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {
@@ -158,7 +158,7 @@ class GameService {
 
   void startIgnitiumAutoCollect(VoidCallback onUpdate) {
     ignitiumDroneTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.ignitiumDroneInterval).round());
+    final interval = Duration(seconds: upgradeService.ignitiumDroneInterval);
     ignitiumDroneTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null && resource.ignitiumDrones > 0) {
@@ -171,7 +171,7 @@ class GameService {
 
   void startAmarenthiteDrillAutoCollect(VoidCallback onUpdate) {
     amarenthiteDrillTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.amarenthiteDrillInterval).round());
+    final interval = Duration(seconds: upgradeService.amarenthiteDrillInterval);
     amarenthiteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {

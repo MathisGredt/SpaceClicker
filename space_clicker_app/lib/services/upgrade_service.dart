@@ -1,5 +1,5 @@
 class UpgradeService {
-  int noctiliumDroneInterval = 5; // Intervalle par défaut en secondes
+  int noctiliumDroneInterval = 5;
   int verdaniteDroneInterval = 5;
   int ignitiumDroneInterval = 5;
 

@@ -12,6 +12,7 @@ class UpgradeScreen extends StatelessWidget {
       cost: 400,
       onApply: () {
         GameService.instance.upgradeService.reduceDroneInterval('noctilium');
+        GameService.instance.startNoctiliumAutoCollect(() {});
       },
     ),
     Upgrade(
@@ -21,6 +22,7 @@ class UpgradeScreen extends StatelessWidget {
       cost: 400,
       onApply: () {
         GameService.instance.upgradeService.reduceDroneInterval('verdanite');
+        GameService.instance.startVerdaniteAutoCollect(() {});
       },
     ),
     Upgrade(
@@ -30,6 +32,7 @@ class UpgradeScreen extends StatelessWidget {
       cost: 400,
       onApply: () {
         GameService.instance.upgradeService.reduceDroneInterval('ignitium');
+        GameService.instance.startIgnitiumAutoCollect(() {});
       },
     ),
     Upgrade(
@@ -39,6 +42,7 @@ class UpgradeScreen extends StatelessWidget {
       cost: 600,
       onApply: () {
         GameService.instance.upgradeService.reduceDrillInterval('ferralyte');
+        GameService.instance.startFerralyteDrillAutoCollect(() {});
       },
     ),
     Upgrade(
@@ -48,6 +52,7 @@ class UpgradeScreen extends StatelessWidget {
       cost: 600,
       onApply: () {
         GameService.instance.upgradeService.reduceDrillInterval('crimsite');
+        GameService.instance.startCrimsiteDrillAutoCollect(() {});
       },
     ),
     Upgrade(
@@ -57,6 +62,7 @@ class UpgradeScreen extends StatelessWidget {
       cost: 600,
       onApply: () {
         GameService.instance.upgradeService.reduceDrillInterval('amarenthite');
+        GameService.instance.startAmarenthiteDrillAutoCollect(() {});
       },
     ),
   ];
