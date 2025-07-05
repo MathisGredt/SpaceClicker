@@ -86,7 +86,7 @@ class GameService {
 
   void startNoctiliumAutoCollect(VoidCallback onUpdate) {
     noctiliumDroneTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.noctiliumDroneSpeedMultiplier).round());
+    final interval = Duration(seconds: upgradeService.noctiliumDroneInterval);
     noctiliumDroneTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null && resource.noctiliumDrones > 0) {
@@ -99,7 +99,7 @@ class GameService {
 
   void startFerralyteDrillAutoCollect(VoidCallback onUpdate) {
     ferralyteDrillTimer?.cancel();
-    final interval = Duration(seconds: (1 / upgradeService.ferralyteDrillSpeedMultiplier).round());
+    final interval = Duration(seconds: (5 / upgradeService.ferralyteDrillInterval).round());
     ferralyteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {
@@ -122,7 +122,7 @@ class GameService {
 
   void startVerdaniteAutoCollect(VoidCallback onUpdate) {
     verdaniteDroneTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.verdaniteDroneSpeedMultiplier).round());
+    final interval = Duration(seconds: (5 / upgradeService.verdaniteDroneInterval).round());
     verdaniteDroneTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null && resource.verdaniteDrones > 0) {
@@ -135,7 +135,7 @@ class GameService {
 
   void startCrimsiteDrillAutoCollect(VoidCallback onUpdate) {
     crimsiteDrillTimer?.cancel();
-    final interval = Duration(seconds: (1 / upgradeService.crimsiteDrillSpeedMultiplier).round());
+    final interval = Duration(seconds: (5 / upgradeService.crimsiteDrillInterval).round());
     crimsiteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {
@@ -158,7 +158,7 @@ class GameService {
 
   void startIgnitiumAutoCollect(VoidCallback onUpdate) {
     ignitiumDroneTimer?.cancel();
-    final interval = Duration(seconds: (5 / upgradeService.ignitiumDroneSpeedMultiplier).round());
+    final interval = Duration(seconds: (5 / upgradeService.ignitiumDroneInterval).round());
     ignitiumDroneTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null && resource.ignitiumDrones > 0) {
@@ -171,7 +171,7 @@ class GameService {
 
   void startAmarenthiteDrillAutoCollect(VoidCallback onUpdate) {
     amarenthiteDrillTimer?.cancel();
-    final interval = Duration(seconds: (1 / upgradeService.amarenthiteDrillSpeedMultiplier).round());
+    final interval = Duration(seconds: (5 / upgradeService.amarenthiteDrillInterval).round());
     amarenthiteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {

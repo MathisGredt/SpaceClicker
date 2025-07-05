@@ -11,7 +11,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drone_noctilium.png',
       cost: 400,
       onApply: () {
-        GameService.instance.upgradeService.reduceDroneCollectionTime('noctilium');
+        GameService.instance.upgradeService.reduceDroneInterval('noctilium');
       },
     ),
     Upgrade(
@@ -20,7 +20,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drone_verdanite.png',
       cost: 400,
       onApply: () {
-        GameService.instance.upgradeService.reduceDroneCollectionTime('verdanite');
+        GameService.instance.upgradeService.reduceDroneInterval('verdanite');
       },
     ),
     Upgrade(
@@ -29,7 +29,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drone_ignitium.png',
       cost: 400,
       onApply: () {
-        GameService.instance.upgradeService.reduceDroneCollectionTime('ignitium');
+        GameService.instance.upgradeService.reduceDroneInterval('ignitium');
       },
     ),
     Upgrade(
@@ -38,7 +38,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drill_ferralyte.png',
       cost: 600,
       onApply: () {
-        GameService.instance.upgradeService.reduceCollectionTime('ferralyte');
+        GameService.instance.upgradeService.reduceDrillInterval('ferralyte');
       },
     ),
     Upgrade(
@@ -47,7 +47,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drill_crimsite.png',
       cost: 600,
       onApply: () {
-        GameService.instance.upgradeService.reduceCollectionTime('crimsite');
+        GameService.instance.upgradeService.reduceDrillInterval('crimsite');
       },
     ),
     Upgrade(
@@ -56,7 +56,7 @@ class UpgradeScreen extends StatelessWidget {
       imagePath: 'assets/images/drill_amarenthite.png',
       cost: 600,
       onApply: () {
-        GameService.instance.upgradeService.reduceCollectionTime('amarenthite');
+        GameService.instance.upgradeService.reduceDrillInterval('amarenthite');
       },
     ),
   ];
@@ -79,26 +79,32 @@ class UpgradeScreen extends StatelessWidget {
               title: Text(upgrade.title, style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(upgrade.description),
               trailing: Text(
-                "${upgrade.cost} ${index == 0 ? 'Noctilium' : index == 1 ? 'Verdanite' : 'Ignitium'}",
+                "${upgrade.cost} ${index == 0 ? 'Noctilium' : index == 1 ? 'Verdanite' : index == 2 ? 'Ignitium' : 'Ressources'}",
                 style: TextStyle(color: Colors.green),
               ),
               onTap: () {
                 final resource = GameService.instance.resourceNotifier.value;
                 if (resource != null) {
-                  if (resource.noctilium >= upgrade.cost && index == 0) {
+                  if (index == 0 && resource.noctilium >= upgrade.cost) {
                     resource.noctilium -= upgrade.cost;
                     upgrade.onApply();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Amélioration achetée : ${upgrade.title}")),
                     );
-                  } else if (resource.verdanite >= upgrade.cost && index == 1) {
+                  } else if (index == 1 && resource.verdanite >= upgrade.cost) {
                     resource.verdanite -= upgrade.cost;
                     upgrade.onApply();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Amélioration achetée : ${upgrade.title}")),
                     );
-                  } else if (resource.ignitium >= upgrade.cost && index == 2) {
+                  } else if (index == 2 && resource.ignitium >= upgrade.cost) {
                     resource.ignitium -= upgrade.cost;
+                    upgrade.onApply();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Amélioration achetée : ${upgrade.title}")),
+                    );
+                  } else if (index >= 3 && resource.noctilium >= upgrade.cost) {
+                    resource.noctilium -= upgrade.cost;
                     upgrade.onApply();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Amélioration achetée : ${upgrade.title}")),

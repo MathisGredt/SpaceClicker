@@ -1,45 +1,45 @@
 class UpgradeService {
-  double noctiliumDroneSpeedMultiplier = 1.0;
-  double verdaniteDroneSpeedMultiplier = 1.0;
-  double ignitiumDroneSpeedMultiplier = 1.0;
+  int noctiliumDroneInterval = 5; // Intervalle par défaut en secondes
+  int verdaniteDroneInterval = 5;
+  int ignitiumDroneInterval = 5;
 
-  double ferralyteDrillSpeedMultiplier = 1.0;
-  double crimsiteDrillSpeedMultiplier = 1.0;
-  double amarenthiteDrillSpeedMultiplier = 1.0;
+  int ferralyteDrillInterval = 5;
+  int crimsiteDrillInterval = 5;
+  int amarenthiteDrillInterval = 5;
 
-  void reduceDroneCollectionTime(String droneType) {
+  void reduceDroneInterval(String droneType) {
     switch (droneType.toLowerCase()) {
       case 'noctilium':
-        noctiliumDroneSpeedMultiplier *= 0.9; // Reduce collection time by 10%
+        if (noctiliumDroneInterval > 1) noctiliumDroneInterval--;
         break;
       case 'verdanite':
-        verdaniteDroneSpeedMultiplier *= 0.9;
+        if (verdaniteDroneInterval > 1) verdaniteDroneInterval--;
         break;
       case 'ignitium':
-        ignitiumDroneSpeedMultiplier *= 0.9;
+        if (ignitiumDroneInterval > 1) ignitiumDroneInterval--;
         break;
       default:
         throw ArgumentError("Unknown drone type: $droneType");
     }
   }
 
-  void reduceCollectionTime(String type) {
-    switch (type.toLowerCase()) {
+  void reduceDrillInterval(String drillType) {
+    switch (drillType.toLowerCase()) {
       case 'ferralyte':
-        ferralyteDrillSpeedMultiplier *= 0.9; // Reduce collection time by 10%
+        if (ferralyteDrillInterval > 1) ferralyteDrillInterval--;
         break;
       case 'crimsite':
-        crimsiteDrillSpeedMultiplier *= 0.9;
+        if (crimsiteDrillInterval > 1) crimsiteDrillInterval--;
         break;
       case 'amarenthite':
-        amarenthiteDrillSpeedMultiplier *= 0.9;
+        if (amarenthiteDrillInterval > 1) amarenthiteDrillInterval--;
         break;
       default:
-        throw ArgumentError("Unknown type: $type");
+        throw ArgumentError("Unknown drill type: $drillType");
     }
   }
 
   void dispose() {
-    // Release resources if necessary
+    // Dispose resources if needed
   }
 }
