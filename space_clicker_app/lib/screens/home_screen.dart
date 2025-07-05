@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../widgets/background_video.dart';
 import '../services/database_service.dart';
-import '../services/bonus_service.dart';
+import '../services/upgrade_service.dart';
 import '../services/video_service.dart';
 import '../widgets/resource_display.dart';
 import '../widgets/retro_terminal_left.dart';
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool isFading = false;
   bool fadeOut = true;
   late DatabaseService dbService;
-  late BonusService bonusService;
+  late UpgradeService upgradeService;
   List<String> history = [];
   Timer? autoCollectTimer;
   List<Widget> fallingWidgets = [];
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     videoService = VideoService();
     dbService = DatabaseService();
-    bonusService = BonusService();
+    upgradeService = UpgradeService();
     _initAndLoad();
 
     // Fade-out animation au chargement

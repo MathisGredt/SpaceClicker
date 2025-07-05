@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../widgets/background_video.dart';
 import '../services/database_service.dart';
-import '../services/bonus_service.dart';
+import '../services/upgrade_service.dart';
 import '../services/video_service.dart';
 import '../widgets/resource_display.dart';
 import '../services/game_service.dart';
@@ -27,7 +27,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
   bool isFading = false;
   bool fadeOut = true;
   late DatabaseService dbService;
-  late BonusService bonusService;
+  late UpgradeService upgradeService;
   List<String> history = [];
   List<Widget> fallingWidgets = [];
 
@@ -36,7 +36,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
     super.initState();
     videoService = VideoService();
     dbService = DatabaseService();
-    bonusService = BonusService();
+    upgradeService = UpgradeService();
     _initAndLoad();
 
     Future.delayed(Duration(seconds: 1), () {

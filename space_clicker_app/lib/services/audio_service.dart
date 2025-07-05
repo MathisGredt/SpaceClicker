@@ -34,10 +34,16 @@ class AudioService {
   }
 
   Future<void> _playRandomTrack() async {
+    if (_tracks.isEmpty) return; // Vérifie que la liste des pistes n'est pas vide
+
     int nextTrackIndex;
-    do {
-      nextTrackIndex = _random.nextInt(_tracks.length);
-    } while (_tracks.length > 1 && nextTrackIndex == _currentTrackIndex);
+    if (_tracks.length == 1) {
+      nextTrackIndex = 0; // Si une seule piste, joue cette piste
+    } else {
+      do {
+        nextTrackIndex = _random.nextInt(_tracks.length);
+      } while (nextTrackIndex == _currentTrackIndex);
+    }
 
     _currentTrackIndex = nextTrackIndex;
     final track = _tracks[_currentTrackIndex!];

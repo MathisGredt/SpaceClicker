@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/resource_model.dart';
 import 'database_service.dart';
-import 'bonus_service.dart';
+import 'upgrade_service.dart';
 import '../screens/upgrade_screen.dart';
 
 // ==== COMMAND HELP CONSTANTS ====
@@ -43,15 +43,15 @@ class GameService {
   static GameService get instance => _instance;
 
   final DatabaseService dbService = DatabaseService();
-  final BonusService bonusService = BonusService();
+  final UpgradeService upgradeService = UpgradeService();
 
   final ValueNotifier<Resource?> resourceNotifier = ValueNotifier<Resource?>(null);
 
   List<String> history = [];
 
-  Timer? noctiliumAutoCollectTimer;
-  Timer? verdaniteAutoCollectTimer;
-  Timer? ignitiumAutoCollectTimer;
+  Timer? noctiliumDroneTimer;
+  Timer? verdaniteDroneTimer;
+  Timer? ignitiumDroneTimer;
   Timer? ferralyteDrillTimer;
   Timer? crimsiteDrillTimer;
   Timer? amarenthiteDrillTimer;
@@ -64,10 +64,10 @@ class GameService {
   }
 
   void dispose() {
-    noctiliumAutoCollectTimer?.cancel();
-    verdaniteAutoCollectTimer?.cancel();
-    ignitiumAutoCollectTimer?.cancel();
-    bonusService.dispose();
+    noctiliumDroneTimer?.cancel();
+    verdaniteDroneTimer?.cancel();
+    ignitiumDroneTimer?.cancel();
+    upgradeService.dispose();
     if (resourceNotifier.value != null) dbService.saveData(resourceNotifier.value!);
     dbService.closeDb();
   }
@@ -85,14 +85,12 @@ class GameService {
   }
 
   void startNoctiliumAutoCollect(VoidCallback onUpdate) {
-    noctiliumAutoCollectTimer?.cancel();
-    noctiliumAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      final r = resourceNotifier.value;
-      if (r != null && r.noctiliumDrones > 0) {
-        final collected = (r.noctiliumDrones * 2 * bonusService.bonusMultiplier).round();
-        r.noctilium += collected;
-        r.totalCollected += collected;
-        dbService.saveData(r);
+    noctiliumDroneTimer?.cancel();
+    final interval = Duration(seconds: (5 / upgradeService.noctiliumDroneSpeedMultiplier).round());
+    noctiliumDroneTimer = Timer.periodic(interval, (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null && resource.noctiliumDrones > 0) {
+        resource.noctilium += resource.noctiliumDrones;
         resourceNotifier.notifyListeners();
         onUpdate();
       }
@@ -100,12 +98,14 @@ class GameService {
   }
 
   void startFerralyteDrillAutoCollect(VoidCallback onUpdate) {
-    ferralyteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    ferralyteDrillTimer?.cancel();
+    final interval = Duration(seconds: (1 / upgradeService.ferralyteDrillSpeedMultiplier).round());
+    ferralyteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {
         resource.ferralyte += resource.ferralyteDrills;
         dbService.saveData(resource);
-        resourceNotifier.notifyListeners(); // Notifie les changements
+        resourceNotifier.notifyListeners();
         onUpdate();
       }
     });
@@ -121,14 +121,12 @@ class GameService {
   }
 
   void startVerdaniteAutoCollect(VoidCallback onUpdate) {
-    verdaniteAutoCollectTimer?.cancel();
-    verdaniteAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      final r = resourceNotifier.value;
-      if (r != null && r.verdaniteDrones > 0) {
-        final collected = (r.verdaniteDrones * 2 * bonusService.bonusMultiplier).round();
-        r.verdanite += collected;
-        r.totalCollected += collected;
-        dbService.saveData(r);
+    verdaniteDroneTimer?.cancel();
+    final interval = Duration(seconds: (5 / upgradeService.verdaniteDroneSpeedMultiplier).round());
+    verdaniteDroneTimer = Timer.periodic(interval, (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null && resource.verdaniteDrones > 0) {
+        resource.verdanite += resource.verdaniteDrones;
         resourceNotifier.notifyListeners();
         onUpdate();
       }
@@ -136,12 +134,14 @@ class GameService {
   }
 
   void startCrimsiteDrillAutoCollect(VoidCallback onUpdate) {
-    crimsiteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    crimsiteDrillTimer?.cancel();
+    final interval = Duration(seconds: (1 / upgradeService.crimsiteDrillSpeedMultiplier).round());
+    crimsiteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {
         resource.crimsite += resource.crimsiteDrills;
         dbService.saveData(resource);
-        resourceNotifier.notifyListeners(); // Notifie les changements
+        resourceNotifier.notifyListeners();
         onUpdate();
       }
     });
@@ -157,14 +157,12 @@ class GameService {
   }
 
   void startIgnitiumAutoCollect(VoidCallback onUpdate) {
-    ignitiumAutoCollectTimer?.cancel();
-    ignitiumAutoCollectTimer = Timer.periodic(Duration(seconds: 1), (_) {
-      final r = resourceNotifier.value;
-      if (r != null && r.ignitiumDrones > 0) {
-        final collected = (r.ignitiumDrones * 2 * bonusService.bonusMultiplier).round();
-        r.ignitium += collected;
-        r.totalCollected += collected;
-        dbService.saveData(r);
+    ignitiumDroneTimer?.cancel();
+    final interval = Duration(seconds: (5 / upgradeService.ignitiumDroneSpeedMultiplier).round());
+    ignitiumDroneTimer = Timer.periodic(interval, (timer) {
+      final resource = resourceNotifier.value;
+      if (resource != null && resource.ignitiumDrones > 0) {
+        resource.ignitium += resource.ignitiumDrones;
         resourceNotifier.notifyListeners();
         onUpdate();
       }
@@ -172,12 +170,14 @@ class GameService {
   }
 
   void startAmarenthiteDrillAutoCollect(VoidCallback onUpdate) {
-    amarenthiteDrillTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+    amarenthiteDrillTimer?.cancel();
+    final interval = Duration(seconds: (1 / upgradeService.amarenthiteDrillSpeedMultiplier).round());
+    amarenthiteDrillTimer = Timer.periodic(interval, (timer) {
       final resource = resourceNotifier.value;
       if (resource != null) {
         resource.amarenthite += resource.amarenthiteDrills;
         dbService.saveData(resource);
-        resourceNotifier.notifyListeners(); // Notifie les changements
+        resourceNotifier.notifyListeners();
         onUpdate();
       }
     });
@@ -211,7 +211,7 @@ class GameService {
   }
 
   void attemptBuyDrill(String drillType, BuildContext context) {
-    const cost = 100;
+    const cost = 100; // Coût fixe pour les forreuses
     final r = resourceNotifier.value;
     if (r == null) return;
 
@@ -273,13 +273,11 @@ class GameService {
           r.noctilium -= cost;
           r.noctiliumDrones++;
           _showMessage(context, "Drone de Noctilium acheté pour $cost !");
-          history.add("Drone de Noctilium acheté pour $cost !");
           dbService.saveData(r);
           startNoctiliumAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
           _showMessage(context, "Pas assez de Noctilium pour acheter ce drone (coût: $cost).");
-          history.add("Pas assez de Noctilium pour acheter ce drone (coût: $cost).");
         }
         break;
       case 'verdanite':
@@ -287,13 +285,11 @@ class GameService {
           r.verdanite -= cost;
           r.verdaniteDrones++;
           _showMessage(context, "Drone de Verdanite acheté pour $cost !");
-          history.add("Drone de Verdanite acheté pour $cost !");
           dbService.saveData(r);
           startVerdaniteAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
           _showMessage(context, "Pas assez de Verdanite pour acheter ce drone (coût: $cost).");
-          history.add("Pas assez de Verdanite pour acheter ce drone (coût: $cost).");
         }
         break;
       case 'ignitium':
@@ -301,18 +297,15 @@ class GameService {
           r.ignitium -= cost;
           r.ignitiumDrones++;
           _showMessage(context, "Drone d'Ignitium acheté pour $cost !");
-          history.add("Drone d'Ignitium acheté pour $cost !");
           dbService.saveData(r);
           startIgnitiumAutoCollect(() {});
           resourceNotifier.notifyListeners();
         } else {
           _showMessage(context, "Pas assez d'Ignitium pour acheter ce drone (coût: $cost).");
-          history.add("Pas assez d'Ignitium pour acheter ce drone (coût: $cost).");
         }
         break;
       default:
         _showMessage(context, "Type de drone inconnu.");
-        history.add("Type de drone inconnu.");
     }
   }
 

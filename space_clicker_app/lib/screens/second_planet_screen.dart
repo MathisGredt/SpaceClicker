@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../widgets/background_video.dart';
 import '../services/database_service.dart';
-import '../services/bonus_service.dart';
+import '../services/upgrade_service.dart';
 import '../services/video_service.dart';
 import '../services/game_service.dart';
 import '../widgets/retro_terminal_left.dart';
@@ -28,7 +28,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   bool isFading = false;
   bool fadeOut = true; // New state for fade-out
   late DatabaseService dbService;
-  late BonusService bonusService;
+  late UpgradeService upgradeService;
   List<String> history = [];
   List<Widget> fallingWidgets = [];
 
@@ -37,7 +37,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
     super.initState();
     videoService = VideoService();
     dbService = DatabaseService();
-    bonusService = BonusService();
+    upgradeService = UpgradeService();
     _initAndLoad();
 
     // Trigger fade-out animation on screen load
