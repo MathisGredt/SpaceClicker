@@ -2,42 +2,34 @@ import '../models/resource_model.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/database_service.dart';
+import 'game_service.dart';
 
 class UpgradeService {
-  int noctiliumDroneInterval = 5;
-  int verdaniteDroneInterval = 5;
-  int ignitiumDroneInterval = 5;
-
-  int ferralyteDrillInterval = 5;
-  int crimsiteDrillInterval = 5;
-  int amarenthiteDrillInterval = 5;
-
-  final ValueNotifier<Resource?> resourceNotifier = ValueNotifier<Resource?>(null);
-  late DatabaseService dbService;
+  ValueNotifier<Resource?> get resourceNotifier => GameService.instance.resourceNotifier;
+  DatabaseService get dbService => GameService.instance.dbService;
 
   void reduceDroneInterval(String droneType) {
     final resource = resourceNotifier.value;
-    if (resource == null) return;
+    if (resource == null) {
+      return;
+    }
 
     switch (droneType.toLowerCase()) {
       case 'noctilium':
-        if (noctiliumDroneInterval > 1) {
-          noctiliumDroneInterval--;
-          resource.noctiliumDroneInterval = noctiliumDroneInterval;
+        if (resource.noctiliumDroneInterval > 1) {
+          resource.noctiliumDroneInterval--;
           dbService.saveData(resource);
         }
         break;
       case 'verdanite':
-        if (verdaniteDroneInterval > 1) {
-          verdaniteDroneInterval--;
-          resource.verdaniteDroneInterval = verdaniteDroneInterval;
+        if (resource.verdaniteDroneInterval > 1) {
+          resource.verdaniteDroneInterval--;
           dbService.saveData(resource);
         }
         break;
       case 'ignitium':
-        if (ignitiumDroneInterval > 1) {
-          ignitiumDroneInterval--;
-          resource.ignitiumDroneInterval = ignitiumDroneInterval;
+        if (resource.ignitiumDroneInterval > 1) {
+          resource.ignitiumDroneInterval--;
           dbService.saveData(resource);
         }
         break;
@@ -52,23 +44,20 @@ class UpgradeService {
 
     switch (drillType.toLowerCase()) {
       case 'ferralyte':
-        if (ferralyteDrillInterval > 1) {
-          ferralyteDrillInterval--;
-          resource.ferralyteDrillInterval = ferralyteDrillInterval;
+        if (resource.ferralyteDrillInterval > 1) {
+          resource.ferralyteDrillInterval--;
           dbService.saveData(resource);
         }
         break;
       case 'crimsite':
-        if (crimsiteDrillInterval > 1) {
-          crimsiteDrillInterval--;
-          resource.crimsiteDrillInterval = crimsiteDrillInterval;
+        if (resource.crimsiteDrillInterval > 1) {
+          resource.crimsiteDrillInterval--;
           dbService.saveData(resource);
         }
         break;
       case 'amarenthite':
-        if (amarenthiteDrillInterval > 1) {
-          amarenthiteDrillInterval--;
-          resource.amarenthiteDrillInterval = amarenthiteDrillInterval;
+        if (resource.amarenthiteDrillInterval > 1) {
+          resource.amarenthiteDrillInterval--;
           dbService.saveData(resource);
         }
         break;

@@ -67,6 +67,9 @@ class GameService {
     noctiliumDroneTimer?.cancel();
     verdaniteDroneTimer?.cancel();
     ignitiumDroneTimer?.cancel();
+    ferralyteDrillTimer?.cancel();
+    crimsiteDrillTimer?.cancel();
+    amarenthiteDrillTimer?.cancel();
     upgradeService.dispose();
     if (resourceNotifier.value != null) dbService.saveData(resourceNotifier.value!);
     dbService.closeDb();
@@ -86,10 +89,11 @@ class GameService {
 
   void startNoctiliumAutoCollect(VoidCallback onUpdate) {
     noctiliumDroneTimer?.cancel();
-    final interval = Duration(seconds: upgradeService.noctiliumDroneInterval);
+    final resource = resourceNotifier.value;
+    if (resource == null) return;
+    final interval = Duration(seconds: resource.noctiliumDroneInterval);
     noctiliumDroneTimer = Timer.periodic(interval, (timer) {
-      final resource = resourceNotifier.value;
-      if (resource != null && resource.noctiliumDrones > 0) {
+      if (resource.noctiliumDrones > 0) {
         resource.noctilium += resource.noctiliumDrones;
         dbService.saveData(resource);
         resourceNotifier.notifyListeners();
@@ -100,15 +104,14 @@ class GameService {
 
   void startFerralyteDrillAutoCollect(VoidCallback onUpdate) {
     ferralyteDrillTimer?.cancel();
-    final interval = Duration(seconds: upgradeService.ferralyteDrillInterval);
+    final resource = resourceNotifier.value;
+    if (resource == null) return;
+    final interval = Duration(seconds: resource.ferralyteDrillInterval);
     ferralyteDrillTimer = Timer.periodic(interval, (timer) {
-      final resource = resourceNotifier.value;
-      if (resource != null) {
-        resource.ferralyte += resource.ferralyteDrills;
-        dbService.saveData(resource);
-        resourceNotifier.notifyListeners();
-        onUpdate();
-      }
+      resource.ferralyte += resource.ferralyteDrills;
+      dbService.saveData(resource);
+      resourceNotifier.notifyListeners();
+      onUpdate();
     });
   }
 
@@ -123,10 +126,11 @@ class GameService {
 
   void startVerdaniteAutoCollect(VoidCallback onUpdate) {
     verdaniteDroneTimer?.cancel();
-    final interval = Duration(seconds: upgradeService.verdaniteDroneInterval);
+    final resource = resourceNotifier.value;
+    if (resource == null) return;
+    final interval = Duration(seconds: resource.verdaniteDroneInterval);
     verdaniteDroneTimer = Timer.periodic(interval, (timer) {
-      final resource = resourceNotifier.value;
-      if (resource != null && resource.verdaniteDrones > 0) {
+      if (resource.verdaniteDrones > 0) {
         resource.verdanite += resource.verdaniteDrones;
         dbService.saveData(resource);
         resourceNotifier.notifyListeners();
@@ -137,15 +141,14 @@ class GameService {
 
   void startCrimsiteDrillAutoCollect(VoidCallback onUpdate) {
     crimsiteDrillTimer?.cancel();
-    final interval = Duration(seconds: upgradeService.crimsiteDrillInterval);
+    final resource = resourceNotifier.value;
+    if (resource == null) return;
+    final interval = Duration(seconds: resource.crimsiteDrillInterval);
     crimsiteDrillTimer = Timer.periodic(interval, (timer) {
-      final resource = resourceNotifier.value;
-      if (resource != null) {
-        resource.crimsite += resource.crimsiteDrills;
-        dbService.saveData(resource);
-        resourceNotifier.notifyListeners();
-        onUpdate();
-      }
+      resource.crimsite += resource.crimsiteDrills;
+      dbService.saveData(resource);
+      resourceNotifier.notifyListeners();
+      onUpdate();
     });
   }
 
@@ -160,10 +163,11 @@ class GameService {
 
   void startIgnitiumAutoCollect(VoidCallback onUpdate) {
     ignitiumDroneTimer?.cancel();
-    final interval = Duration(seconds: upgradeService.ignitiumDroneInterval);
+    final resource = resourceNotifier.value;
+    if (resource == null) return;
+    final interval = Duration(seconds: resource.ignitiumDroneInterval);
     ignitiumDroneTimer = Timer.periodic(interval, (timer) {
-      final resource = resourceNotifier.value;
-      if (resource != null && resource.ignitiumDrones > 0) {
+      if (resource.ignitiumDrones > 0) {
         resource.ignitium += resource.ignitiumDrones;
         dbService.saveData(resource);
         resourceNotifier.notifyListeners();
@@ -174,15 +178,14 @@ class GameService {
 
   void startAmarenthiteDrillAutoCollect(VoidCallback onUpdate) {
     amarenthiteDrillTimer?.cancel();
-    final interval = Duration(seconds: upgradeService.amarenthiteDrillInterval);
+    final resource = resourceNotifier.value;
+    if (resource == null) return;
+    final interval = Duration(seconds: resource.amarenthiteDrillInterval);
     amarenthiteDrillTimer = Timer.periodic(interval, (timer) {
-      final resource = resourceNotifier.value;
-      if (resource != null) {
-        resource.amarenthite += resource.amarenthiteDrills;
-        dbService.saveData(resource);
-        resourceNotifier.notifyListeners();
-        onUpdate();
-      }
+      resource.amarenthite += resource.amarenthiteDrills;
+      dbService.saveData(resource);
+      resourceNotifier.notifyListeners();
+      onUpdate();
     });
   }
 
@@ -393,6 +396,61 @@ class GameService {
         context,
         MaterialPageRoute(builder: (context) => UpgradeScreen()),
       );
+      resourceNotifier.notifyListeners();
+      return;
+    }
+
+    // /steal <ResourceType> <quantité>
+    if (lower.startsWith('/steal')) {
+      final parts = trimmedInput.split(RegExp(r'\s+'));
+      if (parts.length == 3) {
+        final type = parts[1].toLowerCase();
+        final qty = int.tryParse(parts[2]);
+        final r = resourceNotifier.value;
+        if (qty != null && qty > 0 && r != null) {
+          bool ok = false;
+          switch (type) {
+            case 'noctilium':
+              r.noctilium += qty;
+              ok = true;
+              break;
+            case 'verdanite':
+              r.verdanite += qty;
+              ok = true;
+              break;
+            case 'ignitium':
+              r.ignitium += qty;
+              ok = true;
+              break;
+            case 'ferralyte':
+              r.ferralyte += qty;
+              ok = true;
+              break;
+            case 'amarenthite':
+              r.amarenthite += qty;
+              ok = true;
+              break;
+            case 'crimsite':
+              r.crimsite += qty;
+              ok = true;
+              break;
+            default:
+            // ressource inconnue
+              break;
+          }
+          if (ok) {
+            dbService.saveData(r);
+            resourceNotifier.notifyListeners();
+            history.add("Vous avez volé $qty $type !");
+          } else {
+            history.add("Type de ressource inconnu : $type");
+          }
+        } else {
+          history.add("Usage: /steal <ResourceType> <quantité> (ex: /steal noctilium 400)");
+        }
+      } else {
+        history.add("Usage: /steal <ResourceType> <quantité> (ex: /steal noctilium 400)");
+      }
       resourceNotifier.notifyListeners();
       return;
     }
