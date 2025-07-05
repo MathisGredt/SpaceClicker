@@ -91,6 +91,7 @@ class GameService {
       final resource = resourceNotifier.value;
       if (resource != null && resource.noctiliumDrones > 0) {
         resource.noctilium += resource.noctiliumDrones;
+        dbService.saveData(resource);
         resourceNotifier.notifyListeners();
         onUpdate();
       }
@@ -127,6 +128,7 @@ class GameService {
       final resource = resourceNotifier.value;
       if (resource != null && resource.verdaniteDrones > 0) {
         resource.verdanite += resource.verdaniteDrones;
+        dbService.saveData(resource);
         resourceNotifier.notifyListeners();
         onUpdate();
       }
@@ -163,6 +165,7 @@ class GameService {
       final resource = resourceNotifier.value;
       if (resource != null && resource.ignitiumDrones > 0) {
         resource.ignitium += resource.ignitiumDrones;
+        dbService.saveData(resource);
         resourceNotifier.notifyListeners();
         onUpdate();
       }

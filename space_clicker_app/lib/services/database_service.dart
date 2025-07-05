@@ -32,18 +32,24 @@ class DatabaseService {
           ignitium INTEGER NOT NULL,
           amarenthite INTEGER NOT NULL,
           crimsite INTEGER NOT NULL,
-          bonus REAL NOT NULL
+          bonus REAL NOT NULL,
+          noctiliumDroneInterval INTEGER NOT NULL DEFAULT 5,
+          verdaniteDroneInterval INTEGER NOT NULL DEFAULT 5,
+          ignitiumDroneInterval INTEGER NOT NULL DEFAULT 5,
+          ferralyteDrillInterval INTEGER NOT NULL DEFAULT 5,
+          crimsiteDrillInterval INTEGER NOT NULL DEFAULT 5,
+          amarenthiteDrillInterval INTEGER NOT NULL DEFAULT 5
         )
       ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 3) {
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthiteDrills INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN crimsiteDrills INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN ferralyteDrills INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthite INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN crimsite INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE $_tableName ADD COLUMN ferralyte INTEGER NOT NULL DEFAULT 0');
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN noctiliumDroneInterval INTEGER NOT NULL DEFAULT 5');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN verdaniteDroneInterval INTEGER NOT NULL DEFAULT 5');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN ignitiumDroneInterval INTEGER NOT NULL DEFAULT 5');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN ferralyteDrillInterval INTEGER NOT NULL DEFAULT 5');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN crimsiteDrillInterval INTEGER NOT NULL DEFAULT 5');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthiteDrillInterval INTEGER NOT NULL DEFAULT 5');
         }
       },
     );
@@ -71,6 +77,12 @@ class DatabaseService {
         amarenthite: 0,
         crimsite: 0,
         bonus: 1.0,
+        noctiliumDroneInterval: 5,
+        verdaniteDroneInterval: 5,
+        ignitiumDroneInterval: 5,
+        ferralyteDrillInterval: 5,
+        crimsiteDrillInterval: 5,
+        amarenthiteDrillInterval: 5,
       ).toMap()..['id'] = 1);
     }
   }

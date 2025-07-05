@@ -14,6 +14,13 @@ class Resource {
   int crimsite;
   double bonus;
 
+  int noctiliumDroneInterval;
+  int verdaniteDroneInterval;
+  int ignitiumDroneInterval;
+  int ferralyteDrillInterval;
+  int crimsiteDrillInterval;
+  int amarenthiteDrillInterval;
+
   Resource({
     required this.noctiliumDrones,
     required this.verdaniteDrones,
@@ -21,6 +28,12 @@ class Resource {
     required this.amarenthiteDrills,
     required this.crimsiteDrills,
     required this.ferralyteDrills,
+    required this.noctiliumDroneInterval,
+    required this.verdaniteDroneInterval,
+    required this.ignitiumDroneInterval,
+    required this.ferralyteDrillInterval,
+    required this.crimsiteDrillInterval,
+    required this.amarenthiteDrillInterval,
     required this.totalCollected,
     this.noctilium = 0,
     this.ferralyte = 0,
@@ -47,6 +60,12 @@ class Resource {
       'amarenthite': amarenthite,
       'crimsite': crimsite,
       'bonus': bonus,
+      'noctiliumDroneInterval': noctiliumDroneInterval,
+      'verdaniteDroneInterval': verdaniteDroneInterval,
+      'ignitiumDroneInterval': ignitiumDroneInterval,
+      'ferralyteDrillInterval': ferralyteDrillInterval,
+      'crimsiteDrillInterval': crimsiteDrillInterval,
+      'amarenthiteDrillInterval': amarenthiteDrillInterval,
     };
   }
 
@@ -66,6 +85,12 @@ class Resource {
       amarenthite: map['amarenthite'] as int? ?? 0,
       crimsite: map['crimsite'] as int? ?? 0,
       bonus: (map['bonus'] ?? 1.0).toDouble(),
+      noctiliumDroneInterval: map['noctiliumDroneInterval'] as int? ?? 5,
+      verdaniteDroneInterval: map['verdaniteDroneInterval'] as int? ?? 5,
+      ignitiumDroneInterval: map['ignitiumDroneInterval'] as int? ?? 5,
+      ferralyteDrillInterval: map['ferralyteDrillInterval'] as int? ?? 5,
+      crimsiteDrillInterval: map['crimsiteDrillInterval'] as int? ?? 5,
+      amarenthiteDrillInterval: map['amarenthiteDrillInterval'] as int? ?? 5,
     );
   }
 }
