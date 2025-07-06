@@ -23,12 +23,12 @@ class RetroTerminalLeft extends StatelessWidget {
             style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
           ),
           SizedBox(height: 10),
-          _resourceRow("Noctilium", resource?.noctilium ?? 0),
-          _resourceRow("Verdanite", resource?.verdanite ?? 0),
-          _resourceRow("Ignitium", resource?.ignitium ?? 0),
-          _resourceRow("Ferralyte", resource?.ferralyte ?? 0),
-          _resourceRow("Amarenthite", resource?.amarenthite ?? 0),
-          _resourceRow("Crimsite", resource?.crimsite ?? 0),
+          _resourceRow("Noctilium", resource?.noctilium ?? 0, 'assets/images/noctilium.png'),
+          _resourceRow("Verdanite", resource?.verdanite ?? 0, 'assets/images/verdanite.png'),
+          _resourceRow("Ignitium", resource?.ignitium ?? 0, 'assets/images/ignitium.png'),
+          _resourceRow("Ferralyte", resource?.ferralyte ?? 0, 'assets/images/ferralyte.png'),
+          _resourceRow("Amarenthite", resource?.amarenthite ?? 0, 'assets/images/amarenthite.png'),
+          _resourceRow("Crimsite", resource?.crimsite ?? 0, 'assets/images/crimsite.png'),
           SizedBox(height: 16),
           Text(
             "=== DRONES ===",
@@ -53,24 +53,38 @@ class RetroTerminalLeft extends StatelessWidget {
     );
   }
 
-  Widget _resourceRow(String name, int value) {
-    return Text(
-      "$name: $value",
-      style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
+  Widget _resourceRow(String name, int value, String imagePath) {
+    return Row(
+      children: [
+        Image.asset(imagePath, width: 16, height: 16),
+        SizedBox(width: 8),
+        Text(
+          "$name: $value",
+          style: TextStyle(color: Colors.greenAccent, fontFamily: 'Courier'),
+        ),
+      ],
     );
   }
 
   Widget _droneRow(String name, int drones) {
-    return Text(
-      "$name drones: $drones",
-      style: TextStyle(color: Colors.yellowAccent, fontFamily: 'Courier', fontSize: 13),
+    return Row(
+      children: [
+        Text(
+          "$name drones: $drones",
+          style: TextStyle(color: Colors.yellowAccent, fontFamily: 'Courier', fontSize: 13),
+        ),
+      ],
     );
   }
 
   Widget _drillRow(String name, int drills) {
-    return Text(
-      "$name: $drills",
-      style: TextStyle(color: Colors.yellowAccent, fontFamily: 'Courier', fontSize: 13),
+    return Row(
+      children: [
+        Text(
+          "$name: $drills",
+          style: TextStyle(color: Colors.yellowAccent, fontFamily: 'Courier', fontSize: 13),
+        ),
+      ],
     );
   }
 }

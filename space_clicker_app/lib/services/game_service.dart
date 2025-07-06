@@ -93,7 +93,7 @@ class GameService {
     if (resource == null) return;
     final interval = Duration(seconds: resource.noctiliumDroneInterval);
     noctiliumDroneTimer = Timer.periodic(interval, (timer) {
-      if (resource.noctiliumDrones > 0) {
+      if (resource.noctiliumDrones > 0 && resource.noctilium < 1000) { // Vérifie le stockage max
         resource.noctilium += resource.noctiliumDrones;
         dbService.saveData(resource);
         resourceNotifier.notifyListeners();
@@ -108,16 +108,18 @@ class GameService {
     if (resource == null) return;
     final interval = Duration(seconds: resource.ferralyteDrillInterval);
     ferralyteDrillTimer = Timer.periodic(interval, (timer) {
-      resource.ferralyte += resource.ferralyteDrills;
-      dbService.saveData(resource);
-      resourceNotifier.notifyListeners();
-      onUpdate();
+      if (resource.ferralyteDrills > 0 && resource.ferralyte < 1000) { // Vérifie le stockage max
+        resource.ferralyte += resource.ferralyteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners();
+        onUpdate();
+      }
     });
   }
 
   void collectNoctilium() {
     final r = resourceNotifier.value;
-    if (r == null) return;
+    if (r == null || r.noctilium >= 1000) return; // Vérifie le stockage max
     r.noctilium++;
     r.totalCollected++;
     dbService.saveData(r);
@@ -130,7 +132,7 @@ class GameService {
     if (resource == null) return;
     final interval = Duration(seconds: resource.verdaniteDroneInterval);
     verdaniteDroneTimer = Timer.periodic(interval, (timer) {
-      if (resource.verdaniteDrones > 0) {
+      if (resource.verdaniteDrones > 0 && resource.verdanite < 1000) { // Vérifie le stockage max
         resource.verdanite += resource.verdaniteDrones;
         dbService.saveData(resource);
         resourceNotifier.notifyListeners();
@@ -145,16 +147,18 @@ class GameService {
     if (resource == null) return;
     final interval = Duration(seconds: resource.crimsiteDrillInterval);
     crimsiteDrillTimer = Timer.periodic(interval, (timer) {
-      resource.crimsite += resource.crimsiteDrills;
-      dbService.saveData(resource);
-      resourceNotifier.notifyListeners();
-      onUpdate();
+      if (resource.crimsiteDrills > 0 && resource.crimsite < 1000) { // Vérifie le stockage max
+        resource.crimsite += resource.crimsiteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners();
+        onUpdate();
+      }
     });
   }
 
   void collectVerdanite() {
     final r = resourceNotifier.value;
-    if (r == null) return;
+    if (r == null || r.verdanite >= 1000) return; // Vérifie le stockage max
     r.verdanite++;
     r.totalCollected++;
     dbService.saveData(r);
@@ -167,7 +171,7 @@ class GameService {
     if (resource == null) return;
     final interval = Duration(seconds: resource.ignitiumDroneInterval);
     ignitiumDroneTimer = Timer.periodic(interval, (timer) {
-      if (resource.ignitiumDrones > 0) {
+      if (resource.ignitiumDrones > 0 && resource.verdanite < 1000) {
         resource.ignitium += resource.ignitiumDrones;
         dbService.saveData(resource);
         resourceNotifier.notifyListeners();
@@ -182,16 +186,18 @@ class GameService {
     if (resource == null) return;
     final interval = Duration(seconds: resource.amarenthiteDrillInterval);
     amarenthiteDrillTimer = Timer.periodic(interval, (timer) {
-      resource.amarenthite += resource.amarenthiteDrills;
-      dbService.saveData(resource);
-      resourceNotifier.notifyListeners();
-      onUpdate();
+      if (resource.amarenthiteDrills > 0 && resource.amarenthite < 1000) { // Vérifie le stockage max
+        resource.amarenthite += resource.amarenthiteDrills;
+        dbService.saveData(resource);
+        resourceNotifier.notifyListeners();
+        onUpdate();
+      }
     });
   }
 
   void collectIgnitium() {
     final r = resourceNotifier.value;
-    if (r == null) return;
+    if (r == null || r.verdanite >= 1000) return;
     r.ignitium++;
     r.totalCollected++;
     dbService.saveData(r);

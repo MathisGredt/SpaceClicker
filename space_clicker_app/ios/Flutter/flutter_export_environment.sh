@@ -1,7 +1,7 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Users\Utilisateur\Documents\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\Utilisateur\Documents\travail\ynov\B3\SpaceClicker\space_clicker_app"
+export "FLUTTER_ROOT=C:\Users\mathi\AppData\Local\flutter"
+export "FLUTTER_APPLICATION_PATH=C:\Users\mathi\Documents\Ynov\B3\SpaceClicker\space_clicker_app"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"
