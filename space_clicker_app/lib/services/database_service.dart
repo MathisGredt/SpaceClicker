@@ -17,39 +17,44 @@ class DatabaseService {
       version: 3,
       onCreate: (db, version) async {
         await db.execute('''
-        CREATE TABLE $_tableName (
-          id INTEGER PRIMARY KEY,
+        CREATE TABLE resource_save (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
           noctiliumDrones INTEGER NOT NULL DEFAULT 0,
           verdaniteDrones INTEGER NOT NULL DEFAULT 0,
           ignitiumDrones INTEGER NOT NULL DEFAULT 0,
           amarenthiteDrills INTEGER NOT NULL DEFAULT 0,
           crimsiteDrills INTEGER NOT NULL DEFAULT 0,
           ferralyteDrills INTEGER NOT NULL DEFAULT 0,
-          totalCollected INTEGER NOT NULL,
-          noctilium INTEGER NOT NULL,
-          ferralyte INTEGER NOT NULL,
-          verdanite INTEGER NOT NULL,
-          ignitium INTEGER NOT NULL,
-          amarenthite INTEGER NOT NULL,
-          crimsite INTEGER NOT NULL,
-          bonus REAL NOT NULL,
+          totalCollected INTEGER NOT NULL DEFAULT 0,
+          noctilium INTEGER NOT NULL DEFAULT 0,
+          ferralyte INTEGER NOT NULL DEFAULT 0,
+          verdanite INTEGER NOT NULL DEFAULT 0,
+          ignitium INTEGER NOT NULL DEFAULT 0,
+          amarenthite INTEGER NOT NULL DEFAULT 0,
+          crimsite INTEGER NOT NULL DEFAULT 0,
+          bonus REAL NOT NULL DEFAULT 1.0,
           noctiliumDroneInterval INTEGER NOT NULL DEFAULT 5,
           verdaniteDroneInterval INTEGER NOT NULL DEFAULT 5,
           ignitiumDroneInterval INTEGER NOT NULL DEFAULT 5,
           ferralyteDrillInterval INTEGER NOT NULL DEFAULT 5,
           crimsiteDrillInterval INTEGER NOT NULL DEFAULT 5,
-          amarenthiteDrillInterval INTEGER NOT NULL DEFAULT 5
-        )
+          amarenthiteDrillInterval INTEGER NOT NULL DEFAULT 5,
+          hasPaidSecondPlanet INTEGER NOT NULL DEFAULT 0,
+          hasPaidThirdPlanet INTEGER NOT NULL DEFAULT 0
+        );
       ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 4) {
+        if (oldVersion < 5) {
           await db.execute('ALTER TABLE $_tableName ADD COLUMN noctiliumDroneInterval INTEGER NOT NULL DEFAULT 5');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN verdaniteDroneInterval INTEGER NOT NULL DEFAULT 5');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN ignitiumDroneInterval INTEGER NOT NULL DEFAULT 5');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN ferralyteDrillInterval INTEGER NOT NULL DEFAULT 5');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN crimsiteDrillInterval INTEGER NOT NULL DEFAULT 5');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthiteDrillInterval INTEGER NOT NULL DEFAULT 5');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN hasPaidSecondPlanet INTEGER DEFAULT 0');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN hasPaidThirdPlanet INTEGER DEFAULT 0');
+
         }
       },
     );
@@ -83,6 +88,8 @@ class DatabaseService {
         ferralyteDrillInterval: 5,
         crimsiteDrillInterval: 5,
         amarenthiteDrillInterval: 5,
+        hasPaidSecondPlanet: false,
+        hasPaidThirdPlanet: false,
       ).toMap()..['id'] = 1);
     }
   }

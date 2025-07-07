@@ -101,9 +101,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _navigateToSecondPlanet() {
-    const requiredNoctilium = 100;
+    const requiredNoctilium = 500;
     final resource = gameService.resourceNotifier.value;
-    if (resource != null && resource.noctilium >= requiredNoctilium) {
+
+    if (resource != null) {
+      if (!resource.hasPaidSecondPlanet) {
+        if (resource.noctilium >= requiredNoctilium) {
+          resource.noctilium -= requiredNoctilium;
+          resource.hasPaidSecondPlanet = true;
+          dbService.saveData(resource);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Vous avez besoin de $requiredNoctilium Noctilium pour accéder à la prochaine planète.")),
+          );
+          return;
+        }
+      }
+
       setState(() {
         isFading = true;
       });
@@ -119,10 +133,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           });
         });
       });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Vous avez besoin de $requiredNoctilium Noctilium pour accéder à la prochaine planète.")),
-      );
     }
   }
 

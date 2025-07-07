@@ -12,6 +12,8 @@ class Resource {
   int ignitium;
   int amarenthite;
   int crimsite;
+  bool hasPaidSecondPlanet;
+  bool hasPaidThirdPlanet;
   double bonus;
 
   int noctiliumDroneInterval;
@@ -35,6 +37,8 @@ class Resource {
     required this.crimsiteDrillInterval,
     required this.amarenthiteDrillInterval,
     required this.totalCollected,
+    this.hasPaidSecondPlanet = false,
+    this.hasPaidThirdPlanet = false,
     this.noctilium = 0,
     this.ferralyte = 0,
     this.verdanite = 0,
@@ -66,6 +70,8 @@ class Resource {
       'ferralyteDrillInterval': ferralyteDrillInterval,
       'crimsiteDrillInterval': crimsiteDrillInterval,
       'amarenthiteDrillInterval': amarenthiteDrillInterval,
+      'hasPaidSecondPlanet': hasPaidSecondPlanet ? 1 : 0,
+      'hasPaidThirdPlanet': hasPaidThirdPlanet ? 1 : 0,
     };
   }
 
@@ -91,6 +97,8 @@ class Resource {
       ferralyteDrillInterval: map['ferralyteDrillInterval'] as int? ?? 5,
       crimsiteDrillInterval: map['crimsiteDrillInterval'] as int? ?? 5,
       amarenthiteDrillInterval: map['amarenthiteDrillInterval'] as int? ?? 5,
+      hasPaidSecondPlanet: map['hasPaidSecondPlanet'] == 1,
+      hasPaidThirdPlanet: map['hasPaidThirdPlanet'] == 1,
     );
   }
 }
