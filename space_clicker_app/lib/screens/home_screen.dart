@@ -161,6 +161,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         );
       },
+      child: IgnorePointer(
+      ignoring: true, // <--- empêche l'icône de bloquer les clics !
       child: Row(
         children: [
           Image.asset(iconPath, width: 24, height: 24),
@@ -171,7 +173,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-    );
+    ),
+  );
 
     controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {

@@ -135,6 +135,8 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
           ),
         );
       },
+      child: IgnorePointer(
+      ignoring: true, // <--- empêche l'icône de bloquer les clics !
       child: Row(
         children: [
           Image.asset(iconPath, width: 24, height: 24),
@@ -145,7 +147,8 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
           ),
         ],
       ),
-    );
+    ),
+  );
 
     controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
