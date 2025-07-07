@@ -106,9 +106,23 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
   }
 
   void _navigateToThirdPlanet() {
-    const requiredVerdanite = 200;
+    const requiredVerdanite = 500;
     final resource = gameService.resourceNotifier.value;
-    if (resource != null && resource.verdanite >= requiredVerdanite) {
+
+    if (resource != null) {
+      if (!resource.hasPaidThirdPlanet) {
+        if (resource.verdanite >= requiredVerdanite) {
+          resource.verdanite -= requiredVerdanite;
+          resource.hasPaidThirdPlanet = true;
+          dbService.saveData(resource);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Vous avez besoin de $requiredVerdanite Verdanite pour accéder à la prochaine planète.")),
+          );
+          return;
+        }
+      }
+
       setState(() {
         isFading = true;
       });
@@ -124,10 +138,6 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
           });
         });
       });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Vous avez besoin de $requiredVerdanite Verdanite pour accéder à la prochaine planète.")),
-      );
     }
   }
 
