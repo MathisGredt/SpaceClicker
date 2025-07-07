@@ -4,6 +4,7 @@ import '../models/resource_model.dart';
 import 'database_service.dart';
 import 'upgrade_service.dart';
 import '../screens/upgrade_screen.dart';
+import '../screens/end_screen.dart';
 
 // ==== COMMAND HELP CONSTANTS ====
 
@@ -321,6 +322,36 @@ class GameService {
     }
   }
 
+  void attemptBuyTimeReactor(BuildContext context) {
+    final r = resourceNotifier.value;
+    if (r == null) return;
+    // Vérifie les ressources requises
+    if (r.noctilium >= 1000 &&
+        r.verdanite >= 1000 &&
+        r.ignitium >= 1000 &&
+        r.ferralyte >= 500 &&
+        r.crimsite >= 500 &&
+        r.amarenthite >= 500) {
+      r.noctilium -= 1000;
+      r.verdanite -= 1000;
+      r.ignitium -= 1000;
+      r.ferralyte -= 500;
+      r.crimsite -= 500;
+      r.amarenthite -= 500;
+      dbService.saveData(r);
+      resourceNotifier.notifyListeners();
+      history.add("Vous avez acheté le Réacteur Temporel !");
+      // Redirection vers l'écran de fin
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => EndScreen()),
+      );
+    } else {
+      history.add("Pas assez de ressources pour acheter un Réacteur Temporel !");
+      _showMessage(context, "Il vous faut : 1000 de chaque matériau basique + 500 des trois autres !");
+    }
+  }
+
   void handleCommand(String input, BuildContext context) {
     final trimmedInput = input.trim();
     final lower = trimmedInput.toLowerCase();
@@ -366,7 +397,8 @@ class GameService {
       history.add('Objets disponibles à l\'achat:');
       history.add('- drone (noctilium, verdanite, ignitium)');
       history.add('- drill (ferralyte, amarenthite, crimsite)');
-      history.add('Utilisez /buy <itemtype> <objet> [quantité]');
+      history.add('- reacteur_temporel');
+      history.add('Utilisez /buy <itemtype> <objet>');
       resourceNotifier.notifyListeners();
       return;
     }
@@ -386,11 +418,15 @@ class GameService {
           attemptBuyDrill(resource, context);
         } else {
           history.add('Commande incorrecte : $input');
-          _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill> <minerai>");
+          _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill|réacteur_temporel> <minerai>");
         }
+      } else if (parts.length == 2 && parts[1].toLowerCase() == 'reacteur_temporel') {
+        // === REACTEUR TEMPOREL ===
+        history.add('Commande exécutée : $input');
+        attemptBuyTimeReactor(context);
       } else {
         history.add('Commande incorrecte : $input');
-        _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill> <minerai>");
+        _showMessage(context, "Commande /buy invalide. Usage : /buy <drone|drill|réacteur_temporel> <minerai>");
       }
       return;
     }
