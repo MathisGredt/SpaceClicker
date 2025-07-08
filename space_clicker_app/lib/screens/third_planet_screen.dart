@@ -52,38 +52,38 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
   }
 
   void _collectIgnitium(TapDownDetails details) {
-    final resource = gameService.resourceNotifier.value;
-    if (resource == null) return;
+  final resource = gameService.resourceNotifier.value;
+  if (resource == null) return;
 
-    RenderBox box = context.findRenderObject() as RenderBox;
-    Offset localPosition = box.globalToLocal(details.globalPosition);
+  RenderBox box = context.findRenderObject() as RenderBox;
+  Offset localPosition = box.globalToLocal(details.globalPosition);
 
-    setState(() {
-      isClicked = true;
-      gameService.collectIgnitium();
+  setState(() {
+    isClicked = true;
+    gameService.collectIgnitium();
 
-      // Jouer le son au clic
-      AudioService().playClickSound('assets/sounds/break.mp3');
+    // Jouer le son au clic
+    AudioService().playClickSound('assets/sounds/break.mp3');
 
-      fallingWidgets.add(_createFallingWidget(
-        "+1",
-        'assets/images/ignitium.png',
-        localPosition,
-      ));
+    fallingWidgets.add(_createFallingWidget(
+      "+${resource.ignitiumClickMult}", // Affiche le multiplicateur
+      'assets/images/ignitium.png',
+      localPosition,
+    ));
+  });
+
+  Future.delayed(Duration(milliseconds: 200), () {
+    if (mounted) setState(() => isClicked = false);
+  });
+
+  Future.delayed(Duration(seconds: 2), () {
+    if (mounted) setState(() {
+      if (fallingWidgets.isNotEmpty) {
+        fallingWidgets.removeAt(0);
+      }
     });
-
-    Future.delayed(Duration(milliseconds: 200), () {
-      if (mounted) setState(() => isClicked = false);
-    });
-
-    Future.delayed(Duration(seconds: 2), () {
-      if (mounted) setState(() {
-        if (fallingWidgets.isNotEmpty) {
-          fallingWidgets.removeAt(0);
-        }
-      });
-    });
-  }
+  });
+}
 
   void _navigateToSecondPlanet() {
     setState(() {

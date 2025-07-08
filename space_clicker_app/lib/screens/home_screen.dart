@@ -69,37 +69,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _collectNoctilium(TapDownDetails details) {
-    if (gameService.resourceNotifier.value == null) return;
+  final resource = gameService.resourceNotifier.value;
+  if (resource == null) return;
 
-    RenderBox box = context.findRenderObject() as RenderBox;
-    Offset localPosition = box.globalToLocal(details.globalPosition);
+  RenderBox box = context.findRenderObject() as RenderBox;
+  Offset localPosition = box.globalToLocal(details.globalPosition);
 
-    setState(() {
-      isClicked = true;
-      gameService.collectNoctilium();
+  setState(() {
+    isClicked = true;
+    gameService.collectNoctilium();
 
-      // Jouer le son au clic
-      AudioService().playClickSound('assets/sounds/break.mp3');
+    // Jouer le son au clic
+    AudioService().playClickSound('assets/sounds/break.mp3');
 
-      fallingWidgets.add(_createFallingWidget(
-        "+1",
-        'assets/images/noctilium.png',
-        localPosition,
-      ));
+    // Affichage entier si tu veux : "+${resource.noctiliumClickMult.round()}"
+    fallingWidgets.add(_createFallingWidget(
+      "+${resource.noctiliumClickMult}", // ou .toStringAsFixed(0) pour enlever les décimales
+      'assets/images/noctilium.png',
+      localPosition,
+    ));
+  });
+
+  Future.delayed(Duration(milliseconds: 200), () {
+    if (mounted) setState(() => isClicked = false);
+  });
+
+  Future.delayed(Duration(seconds: 2), () {
+    if (mounted) setState(() {
+      if (fallingWidgets.isNotEmpty) {
+        fallingWidgets.removeAt(0);
+      }
     });
-
-    Future.delayed(Duration(milliseconds: 200), () {
-      if (mounted) setState(() => isClicked = false);
-    });
-
-    Future.delayed(Duration(seconds: 2), () {
-      if (mounted) setState(() {
-        if (fallingWidgets.isNotEmpty) {
-          fallingWidgets.removeAt(0);
-        }
-      });
-    });
-  }
+  });
+}
 
   void _navigateToSecondPlanet() {
     const requiredNoctilium = 500;

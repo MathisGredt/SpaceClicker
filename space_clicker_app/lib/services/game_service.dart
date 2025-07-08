@@ -121,8 +121,8 @@ class GameService {
   void collectNoctilium() {
     final r = resourceNotifier.value;
     if (r == null || r.noctilium >= 1000) return; // Vérifie le stockage max
-    r.noctilium++;
-    r.totalCollected++;
+    r.noctilium += 1*r.noctiliumClickMult;
+    r.totalCollected += 1*r.noctiliumClickMult;
     dbService.saveData(r);
     resourceNotifier.notifyListeners();
   }
@@ -160,8 +160,8 @@ class GameService {
   void collectVerdanite() {
     final r = resourceNotifier.value;
     if (r == null || r.verdanite >= 1000) return; // Vérifie le stockage max
-    r.verdanite++;
-    r.totalCollected++;
+    r.verdanite += 1*r.verdaniteClickMult;
+    r.totalCollected += 1*r.verdaniteClickMult;
     dbService.saveData(r);
     resourceNotifier.notifyListeners();
   }
@@ -199,8 +199,8 @@ class GameService {
   void collectIgnitium() {
     final r = resourceNotifier.value;
     if (r == null || r.verdanite >= 1000) return;
-    r.ignitium++;
-    r.totalCollected++;
+    r.ignitium += 1*r.ignitiumClickMult;
+    r.totalCollected += 1*r.ignitiumClickMult;
     dbService.saveData(r);
     resourceNotifier.notifyListeners();
   }

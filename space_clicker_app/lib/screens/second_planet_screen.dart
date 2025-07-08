@@ -68,7 +68,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
       AudioService().playClickSound('assets/sounds/break.mp3');
 
       fallingWidgets.add(_createFallingWidget(
-        "+1",
+        "+${resource.verdaniteClickMult}", // Affiche le multiplicateur
         'assets/images/verdanite.png',
         localPosition,
       ));

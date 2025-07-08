@@ -14,7 +14,7 @@ class DatabaseService {
     final path = join(await getDatabasesPath(), 'resource.db');
     _db = await openDatabase(
       path,
-      version: 3,
+      version: 4, // INCREMENTED VERSION
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE resource_save (
@@ -40,7 +40,10 @@ class DatabaseService {
           crimsiteDrillInterval INTEGER NOT NULL DEFAULT 5,
           amarenthiteDrillInterval INTEGER NOT NULL DEFAULT 5,
           hasPaidSecondPlanet INTEGER NOT NULL DEFAULT 0,
-          hasPaidThirdPlanet INTEGER NOT NULL DEFAULT 0
+          hasPaidThirdPlanet INTEGER NOT NULL DEFAULT 0,
+          noctiliumClickMult INTEGER NOT NULL DEFAULT 1,
+          verdaniteClickMult INTEGER NOT NULL DEFAULT 1,
+          ignitiumClickMult INTEGER NOT NULL DEFAULT 1
         );
       ''');
       },
@@ -54,12 +57,16 @@ class DatabaseService {
           await db.execute('ALTER TABLE $_tableName ADD COLUMN amarenthiteDrillInterval INTEGER NOT NULL DEFAULT 5');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN hasPaidSecondPlanet INTEGER DEFAULT 0');
           await db.execute('ALTER TABLE $_tableName ADD COLUMN hasPaidThirdPlanet INTEGER DEFAULT 0');
-
+        }
+        // Add the new click multipliers if upgrading from an earlier version
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN noctiliumClickMult INTEGER NOT NULL DEFAULT 1');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN verdaniteClickMult INTEGER NOT NULL DEFAULT 1');
+          await db.execute('ALTER TABLE $_tableName ADD COLUMN ignitiumClickMult INTEGER NOT NULL DEFAULT 1');
         }
       },
     );
   }
-
 
   Future<void> insertInitialResourceIfNeeded() async {
     final count = Sqflite.firstIntValue(
@@ -90,10 +97,12 @@ class DatabaseService {
         amarenthiteDrillInterval: 5,
         hasPaidSecondPlanet: false,
         hasPaidThirdPlanet: false,
+        noctiliumClickMult: 1,
+        verdaniteClickMult: 1,
+        ignitiumClickMult: 1,
       ).toMap()..['id'] = 1);
     }
   }
-
 
   Future<Resource> loadData() async {
     final List<Map<String, dynamic>> maps = await _db!.query(_tableName);

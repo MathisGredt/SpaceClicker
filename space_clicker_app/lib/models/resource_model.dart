@@ -23,6 +23,11 @@ class Resource {
   int crimsiteDrillInterval;
   int amarenthiteDrillInterval;
 
+  // --- Nouveaux multiplicateurs de clic ---
+  int noctiliumClickMult;
+  int verdaniteClickMult;
+  int ignitiumClickMult;
+
   Resource({
     required this.noctiliumDrones,
     required this.verdaniteDrones,
@@ -46,6 +51,9 @@ class Resource {
     this.amarenthite = 0,
     this.crimsite = 0,
     this.bonus = 1.0,
+    this.noctiliumClickMult = 1,
+    this.verdaniteClickMult = 1,
+    this.ignitiumClickMult = 1,
   });
 
   Map<String, dynamic> toMap() {
@@ -72,6 +80,9 @@ class Resource {
       'amarenthiteDrillInterval': amarenthiteDrillInterval,
       'hasPaidSecondPlanet': hasPaidSecondPlanet ? 1 : 0,
       'hasPaidThirdPlanet': hasPaidThirdPlanet ? 1 : 0,
+      'noctiliumClickMult': noctiliumClickMult,
+      'verdaniteClickMult': verdaniteClickMult,
+      'ignitiumClickMult': ignitiumClickMult,
     };
   }
 
@@ -83,7 +94,7 @@ class Resource {
       amarenthiteDrills: map['amarenthiteDrills'] as int? ?? 0,
       crimsiteDrills: map['crimsiteDrills'] as int? ?? 0,
       ferralyteDrills: map['ferralyteDrills'] as int? ?? 0,
-      totalCollected: map['totalCollected'] as int,
+      totalCollected: map['totalCollected'] as int? ?? 0,
       noctilium: map['noctilium'] as int? ?? 0,
       ferralyte: map['ferralyte'] as int? ?? 0,
       verdanite: map['verdanite'] as int? ?? 0,
@@ -97,8 +108,11 @@ class Resource {
       ferralyteDrillInterval: map['ferralyteDrillInterval'] as int? ?? 5,
       crimsiteDrillInterval: map['crimsiteDrillInterval'] as int? ?? 5,
       amarenthiteDrillInterval: map['amarenthiteDrillInterval'] as int? ?? 5,
-      hasPaidSecondPlanet: map['hasPaidSecondPlanet'] == 1,
-      hasPaidThirdPlanet: map['hasPaidThirdPlanet'] == 1,
+      hasPaidSecondPlanet: (map['hasPaidSecondPlanet'] == 1),
+      hasPaidThirdPlanet: (map['hasPaidThirdPlanet'] == 1),
+      noctiliumClickMult: map['noctiliumClickMult']  as int? ?? 1,
+      verdaniteClickMult: map['verdaniteClickMult']  as int? ?? 1,
+      ignitiumClickMult: map['ignitiumClickMult']  as int? ?? 1,
     );
   }
 }

@@ -8,6 +8,30 @@ class UpgradeService {
   ValueNotifier<Resource?> get resourceNotifier => GameService.instance.resourceNotifier;
   DatabaseService get dbService => GameService.instance.dbService;
 
+  void incrementNoctiliumMult(){
+    final resource = resourceNotifier.value;
+    if (resource != null) {
+      resource.noctiliumClickMult++;
+      dbService.saveData(resource);
+    }
+  }
+
+  void incrementVerdaniteMult(){
+    final resource = resourceNotifier.value;
+    if (resource != null) {
+      resource.verdaniteClickMult++;
+      dbService.saveData(resource);
+    }
+  }
+
+  void incrementIgnitiumMult(){
+    final resource = resourceNotifier.value;
+    if (resource != null) {
+      resource.ignitiumClickMult++;
+      dbService.saveData(resource);
+    }
+  }
+
   void reduceDroneInterval(String droneType) {
     final resource = resourceNotifier.value;
     if (resource == null) {
