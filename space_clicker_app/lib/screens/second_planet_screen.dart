@@ -216,6 +216,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
         children: [
           BackgroundVideo(assetPath: 'assets/videos/background.mp4'),
 
+
           Positioned(
             top: 20,
             left: 0,

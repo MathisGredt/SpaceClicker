@@ -12,6 +12,7 @@ import '../models/resource_model.dart';
 import 'second_planet_screen.dart';
 import '../services/audio_service.dart';
 import '../services/game_service.dart';
+import '../models/RotatingDroneOrbit.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -254,6 +255,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 });
               },
             ),
+          ),
+
+          RotatingDroneOrbit(
+            orbitRadiusX: 250, // Plus éloigné horizontalement
+            orbitRadiusY: 200, // Plus éloigné verticalement
+            assetPath: 'assets/images/drone_noctilium.png',
           ),
 
           Center(
