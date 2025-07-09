@@ -25,6 +25,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Utilisation du singleton
   final GameService gameService = GameService.instance;
 
+  List<Map<String, dynamic>> drones = [];
+
   bool isClicked = false;
   bool isFading = false;
   bool fadeOut = true;
@@ -207,6 +209,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final resource = gameService.resourceNotifier.value;
+
+    // Liste des drones en orbite
+    List<Widget> droneOrbits = [];
+    if (resource != null) {
+      for (int i = 0; i < resource.noctiliumDrones; i++) {
+        final angleOffset = (2 * pi / resource.noctiliumDrones) * i; // Angle unique pour chaque drone
+        droneOrbits.add(
+          RotatingDroneOrbit(
+            orbitRadiusX: 250,
+            orbitRadiusY: 200,
+            assetPath: 'assets/images/drone_noctilium.png',
+            angleOffset: angleOffset,
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -257,12 +277,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          RotatingDroneOrbit(
-            orbitRadiusX: 250, // Plus éloigné horizontalement
-            orbitRadiusY: 200, // Plus éloigné verticalement
-            assetPath: 'assets/images/drone_noctilium.png',
-          ),
-
+          ...droneOrbits,
           Center(
             child: MouseRegion(
               cursor: SystemMouseCursors.click,

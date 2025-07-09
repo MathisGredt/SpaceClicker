@@ -5,12 +5,14 @@ class RotatingDroneOrbit extends StatefulWidget {
   final double orbitRadiusX; // Rayon horizontal
   final double orbitRadiusY; // Rayon vertical
   final String assetPath;
+  final double angleOffset; // Décalage angulaire
 
   const RotatingDroneOrbit({
     Key? key,
     required this.orbitRadiusX,
     required this.orbitRadiusY,
     required this.assetPath,
+    required this.angleOffset, // Ajout du décalage angulaire
   }) : super(key: key);
 
   @override
@@ -41,8 +43,8 @@ class _RotatingDroneOrbitState extends State<RotatingDroneOrbit>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        // Angle en radians (0 à 2π)
-        final angle = 2 * pi * _controller.value;
+        // Angle en radians (0 à 2π) avec décalage angulaire
+        final angle = 2 * pi * _controller.value + widget.angleOffset;
 
         // Calcul de l'ellipse
         final x = widget.orbitRadiusX * cos(angle);
