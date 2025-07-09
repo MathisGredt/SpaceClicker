@@ -12,6 +12,7 @@ import '../models/resource_model.dart';
 import 'home_screen.dart';
 import 'third_planet_screen.dart';
 import '../services/audio_service.dart';
+import '../models/RotatingDroneOrbit.dart';
 
 class SecondPlanetScreen extends StatefulWidget {
   @override
@@ -211,6 +212,23 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
 
   @override
   Widget build(BuildContext context) {
+    final resource = gameService.resourceNotifier.value;
+
+    List<Widget> droneOrbits = [];
+    if (resource != null) {
+      for (int i = 0; i < resource.verdaniteDrones; i++) {
+        final angleOffset = (2 * pi / resource.verdaniteDrones) * i; // Angle unique pour chaque drone
+        droneOrbits.add(
+          RotatingDroneOrbit(
+            orbitRadiusX: 250,
+            orbitRadiusY: 200,
+            assetPath: 'assets/images/drone_verdanite.png',
+            angleOffset: angleOffset, // Passer l'angle unique
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -262,6 +280,7 @@ class _SecondPlanetScreenState extends State<SecondPlanetScreen> with TickerProv
             ),
           ),
 
+          ...droneOrbits,
           Center(
             child: MouseRegion(
               cursor: SystemMouseCursors.click,

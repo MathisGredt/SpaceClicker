@@ -12,6 +12,7 @@ import '../widgets/retro_terminal_right.dart';
 import '../models/resource_model.dart';
 import 'second_planet_screen.dart';
 import '../services/audio_service.dart';
+import '../models/RotatingDroneOrbit.dart';
 
 class ThirdPlanetScreen extends StatefulWidget {
   @override
@@ -170,6 +171,23 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final resource = gameService.resourceNotifier.value;
+
+    List<Widget> droneOrbits = [];
+    if (resource != null) {
+      for (int i = 0; i < resource.ignitiumDrones; i++) {
+        final angleOffset = (2 * pi / resource.ignitiumDrones) * i; // Angle unique pour chaque drone
+        droneOrbits.add(
+          RotatingDroneOrbit(
+            orbitRadiusX: 250,
+            orbitRadiusY: 200,
+            assetPath: 'assets/images/drone_ignitium.png',
+            angleOffset: angleOffset, // Passer l'angle unique
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       body: Stack(
         children: [
@@ -221,6 +239,7 @@ class _ThirdPlanetScreenState extends State<ThirdPlanetScreen> with TickerProvid
             ),
           ),
 
+          ...droneOrbits,
           Center(
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
